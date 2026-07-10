@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>609 沖繩 2刷 2027</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+  :root {
+    --ocean: #0096C7;
+    --ocean-dark: #00547A;
+    --ocean-light: #E0F6FF;
+    --coral: #FF6B35;
+    --coral-light: #FFF0EA;
+    --hibiscus: #E8174A;
+    --sand: #FFFCF7;
+    --sand-dark: #F5EFE6;
+    --teal: #00897B;
+    --teal-light: #E0F5F1;
+    --gold: #FFB300;
+    --gold-light: #FFF8E1;
+    --text: #1A1A2E;
+    --text-muted: #6B6B8A;
+    --white: #FFFFFF;
+    --border: #E2D9CF;
+    --radius: 14px;
+    --nav-h: 58px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', 'Helvetica Neue', 'Noto Sans TC', sans-serif;
+    background: var(--sand); color: var(--text);
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: linear-gradient(90deg, #00547A 0%, #0096C7 60%, #00BCD4 100%);
+    height: var(--nav-h);
+    display: flex; align-items: center; padding: 0 1.5rem; gap: 0.25rem;
+    box-shadow: 0 3px 16px rgba(0,100,160,0.35);
+    border-bottom: 2px solid rgba(255,255,255,0.15);
+  }
+  .nav-logo {
+    color: #fff; font-size: 1.15rem; font-weight: 900;
+    letter-spacing: 0.02em; margin-right: auto;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.2);
+  }
+  nav button {
+    background: none; border: none; color: rgba(255,255,255,0.75);
+    font-size: 0.82rem; padding: 0.35rem 0.75rem; border-radius: 6px; cursor: pointer;
+    transition: background 0.15s, color 0.15s; font-family: inherit;
+  }
+  nav button:hover { background: rgba(255,255,255,0.12); color: #fff; }
+  nav button.active { background: var(--coral); color: #fff; }
+  .nav-auth { margin-left: 0.5rem; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 0.75rem; }
+
+  /* ── SECTIONS ── */
+  section { display: none; min-height: calc(100vh - var(--nav-h)); }
+  section.active { display: block; }
+  .page-inner { max-width: 900px; margin: 0 auto; padding: 2rem 1.25rem; }
+  #itinerary { background: linear-gradient(180deg, #F0FAFF 0%, var(--sand) 100%); }
+  #map { background: linear-gradient(180deg, #FFF8F0 0%, var(--sand) 100%); }
+  #wishes { background: linear-gradient(180deg, #F5F0FF 0%, var(--sand) 100%); }
+  #album { background: linear-gradient(180deg, #F0FFF8 0%, var(--sand) 100%); }
+
+  /* ── HERO / COUNTDOWN ── */
+  #home {
+    background:
+      linear-gradient(175deg, #00547A 0%, #0096C7 35%, #00BCD4 60%, #26C6DA 80%, #FF6B35 130%);
+    position: relative; overflow: hidden;
+  }
+  #home::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(ellipse 80% 60% at 50% 120%, rgba(255,107,53,0.45) 0%, transparent 60%),
+      radial-gradient(circle at 10% 30%, rgba(255,179,0,0.2) 0%, transparent 40%),
+      radial-gradient(circle at 90% 20%, rgba(0,188,212,0.3) 0%, transparent 40%);
+    pointer-events: none;
+  }
+  .hero { text-align: center; padding: 3.5rem 1rem 2.5rem; color: #fff; position: relative; z-index: 1; }
+  .hero h1 {
+    font-size: 2.8rem; font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 0.4rem;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.25);
+  }
+  .hero .sub { font-size: 1rem; opacity: 0.88; margin-bottom: 2.5rem; font-weight: 600; }
+  .countdown-wrap { display: flex; justify-content: center; gap: 1.25rem; flex-wrap: wrap; }
+  .cd-box {
+    background: rgba(255,255,255,0.18);
+    border: 1.5px solid rgba(255,255,255,0.4); border-radius: 16px;
+    padding: 1.25rem 1.5rem; min-width: 92px; text-align: center;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  .cd-num {
+    font-size: 3rem; font-weight: 900; line-height: 1;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .cd-label { font-size: 0.7rem; opacity: 0.8; margin-top: 0.4rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; }
+  .hero-tags { margin-top: 2rem; display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
+  .tag {
+    background: rgba(255,255,255,0.2); border: 1.5px solid rgba(255,255,255,0.45);
+    color: #fff; font-size: 0.78rem; padding: 0.32rem 0.9rem; border-radius: 20px;
+    font-weight: 700; letter-spacing: 0.02em;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .home-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 2rem; }
+  .home-card {
+    background: var(--white);
+    border-radius: 18px;
+    border: 2px solid rgba(0,150,199,0.12);
+    padding: 1.5rem 1.25rem; text-align: center; cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    box-shadow: 0 2px 12px rgba(0,100,160,0.07);
+  }
+  .home-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 12px 32px rgba(0,100,160,0.18);
+    border-color: rgba(0,150,199,0.35);
+  }
+  .home-card .icon { font-size: 2.4rem; margin-bottom: 0.6rem; display: block; }
+  .home-card h3 { font-size: 1rem; font-weight: 800; color: var(--ocean-dark); }
+  .home-card p { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.3rem; font-weight: 600; }
+
+  /* ── WEATHER ── */
+  .weather-city-card { background: var(--white); border-radius: 18px; overflow: hidden; border: 1.5px solid rgba(0,150,199,0.15); box-shadow: 0 4px 20px rgba(0,100,160,0.1); }
+  .wx-city-header { padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; color: #fff; }
+  .wx-city-name { font-size: 1.1rem; font-weight: 900; }
+  .wx-city-sub { font-size: 0.75rem; opacity: 0.8; margin-top: 0.2rem; font-weight: 600; }
+  .wx-now-temp { font-size: 2.8rem; font-weight: 900; line-height: 1; text-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  .wx-now-row { display: flex; gap: 1rem; padding: 0.9rem 1.25rem; background: var(--sand); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .wx-now-item { font-size: 0.85rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 0.3rem; }
+  .wx-icon { font-size: 1.2rem; }
+  .wx-forecast { display: flex; overflow-x: auto; padding: 0.75rem 1rem; gap: 0.5rem; }
+  .wx-day { min-width: 70px; text-align: center; padding: 0.6rem 0.4rem; border-radius: 10px; background: var(--sand); border: 1px solid var(--border); flex-shrink: 0; }
+  .wx-day-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.3rem; }
+  .wx-day-icon { font-size: 1.4rem; margin: 0.2rem 0; }
+  .wx-day-hi { font-size: 0.82rem; font-weight: 800; color: var(--coral); }
+  .wx-day-lo { font-size: 0.75rem; color: var(--ocean); font-weight: 700; }
+  .wx-day-rain { font-size: 0.65rem; color: var(--teal); font-weight: 700; margin-top: 0.2rem; }
+  .climate-tip { background: var(--sand); border-radius: 12px; padding: 0.9rem; text-align: center; }
+  .ct-icon { font-size: 1.6rem; margin-bottom: 0.3rem; }
+  .ct-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); }
+  .ct-val { font-size: 1rem; font-weight: 900; color: var(--ocean-dark); margin: 0.2rem 0; }
+  .ct-note { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; }
+
+  /* ── SHARED COMPONENTS ── */
+  .section-title {
+    font-size: 1.6rem; font-weight: 900; color: var(--ocean-dark);
+    margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;
+    border-left: 4px solid var(--coral); padding-left: 0.75rem;
+  }
+  .card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); padding: 1.25rem; margin-bottom: 1rem; }
+  .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1.1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; transition: background 0.15s; font-family: inherit; }
+  .btn-primary { background: var(--ocean); color: #fff; }
+  .btn-primary:hover { background: var(--ocean-dark); }
+  .btn-secondary { background: var(--sand-dark); color: var(--text); }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-coral { background: var(--coral); color: #fff; }
+  .btn-coral:hover { background: #c54e2a; }
+  .btn-sm { padding: 0.3rem 0.7rem; font-size: 0.78rem; }
+  .badge { display: inline-block; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 20px; }
+  .badge-ocean { background: var(--ocean-light); color: var(--ocean-dark); }
+  .badge-coral { background: var(--coral-light); color: #a84020; }
+  .badge-teal { background: var(--teal-light); color: #0f6054; }
+  .badge-gold { background: var(--gold-light); color: #8a6610; }
+  input, textarea, select { font-family: inherit; font-size: 0.88rem; color: var(--text); }
+  input[type=text], input[type=password], textarea, select {
+    width: 100%; padding: 0.55rem 0.8rem; border: 1px solid var(--border);
+    border-radius: 8px; background: var(--sand); outline: none;
+    transition: border-color 0.15s;
+  }
+  input[type=text]:focus, input[type=password]:focus, textarea:focus, select:focus { border-color: var(--ocean); background: var(--white); }
+  label { font-size: 0.82rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.3rem; }
+  .form-group { margin-bottom: 0.9rem; }
+  .flex { display: flex; }
+  .gap-1 { gap: 0.5rem; }
+  .gap-2 { gap: 1rem; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .mt-1 { margin-top: 0.5rem; }
+  .mt-2 { margin-top: 1rem; }
+  .text-muted { color: var(--text-muted); font-size: 0.82rem; }
+  .text-sm { font-size: 0.82rem; }
+  hr.divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+
+  /* ── AUTH ── */
+  .auth-overlay {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.45); align-items: center; justify-content: center;
+  }
+  .auth-overlay.open { display: flex; }
+  .auth-box { background: var(--white); border-radius: 16px; padding: 2rem; width: 340px; max-width: 95vw; }
+  .auth-box h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--ocean-dark); }
+  .user-pill {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+    color: #fff; border-radius: 20px; padding: 0.25rem 0.75rem; font-size: 0.8rem; cursor: pointer;
+  }
+  .avatar {
+    width: 26px; height: 26px; border-radius: 50%; background: var(--coral);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+
+  /* ── ITINERARY ── */
+  .day-block { margin-bottom: 1.5rem; }
+  .day-header {
+    color: #fff; border-radius: 12px 12px 0 0;
+    padding: 0.85rem 1.2rem; display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .day-header h3 { font-size: 0.95rem; font-weight: 700; }
+  .day-header .day-sub { font-size: 0.78rem; opacity: 0.8; }
+  .day-body { background: var(--white); border: 1px solid var(--border); border-top: none; border-radius: 0 0 10px 10px; }
+  .itinerary-row {
+    display: grid; grid-template-columns: 72px 1fr;
+    border-bottom: 1px solid var(--sand-dark); padding: 0.65rem 1rem;
+  }
+  .itinerary-row:last-child { border-bottom: none; }
+  .it-time { font-size: 0.8rem; font-weight: 700; color: var(--ocean); padding-top: 0.1rem; }
+  .it-content h4 { font-size: 0.88rem; font-weight: 600; }
+  .it-content p { font-size: 0.76rem; color: var(--text-muted); margin-top: 0.15rem; line-height: 1.5; }
+  .edit-area { display: none; background: var(--sand); border-top: 1px solid var(--border); padding: 1.25rem; }
+  .edit-area.open { display: block; }
+
+  /* ── MAP ── */
+  .map-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+  .map-card {
+    background: var(--white);
+    border: 1.5px solid rgba(0,150,199,0.15); border-radius: 16px; overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 10px rgba(0,100,160,0.06);
+  }
+  .map-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,100,160,0.15); }
+  .map-img {
+    width: 100%; height: 130px;
+    background: linear-gradient(135deg, var(--ocean-light) 0%, rgba(255,107,53,0.08) 100%);
+    display: flex; align-items: center; justify-content: center; font-size: 3rem;
+    border-bottom: 1.5px solid rgba(0,150,199,0.1);
+  }
+  .map-body { padding: 0.9rem; }
+  .map-body h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .map-body p { font-size: 0.76rem; color: var(--text-muted); line-height: 1.5; }
+  .map-link { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: var(--ocean); text-decoration: none; margin-top: 0.5rem; }
+
+  /* ── WISHES ── */
+  .wish-input-row { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .wish-input-row input { flex: 1; }
+  .wish-pool { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; }
+  .wish-bubble {
+    background: var(--white);
+    border: 1.5px solid rgba(0,150,199,0.15);
+    border-radius: 16px;
+    padding: 0.9rem 1rem; position: relative;
+    transition: transform 0.2s, box-shadow 0.2s; cursor: default;
+    box-shadow: 0 2px 10px rgba(0,100,160,0.07);
+  }
+  .wish-bubble:hover { transform: translateY(-3px) rotate(-0.5deg); box-shadow: 0 8px 24px rgba(0,100,160,0.15); }
+  .wish-bubble:hover { transform: translateY(-2px); }
+  .wish-bubble p { font-size: 0.88rem; line-height: 1.5; }
+  .wish-meta { margin-top: 0.4rem; display: flex; justify-content: space-between; align-items: center; }
+  .wish-author { font-size: 0.7rem; color: var(--text-muted); }
+  .wish-del { background: none; border: none; color: #ccc; cursor: pointer; font-size: 0.8rem; padding: 0; }
+  .wish-del:hover { color: var(--coral); }
+  .wish-coin { font-size: 1.3rem; position: absolute; top: -8px; right: -6px; }
+
+  /* ── ALBUM ── */
+  .album-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0; }
+  .album-tab {
+    padding: 0.6rem 1.25rem; border-radius: 8px 8px 0 0; font-size: 0.9rem;
+    font-weight: 700; cursor: pointer; border: none; background: none;
+    color: var(--text-muted); border-bottom: 3px solid transparent; margin-bottom: -2px;
+    font-family: inherit; transition: color 0.15s, border-color 0.15s;
+  }
+  .album-tab.active { color: var(--coral); border-bottom-color: var(--coral); }
+  .album-year { display: none; }
+  .album-year.active { display: block; }
+  .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.75rem; }
+  .photo-cell {
+    aspect-ratio: 1; border-radius: 14px; overflow: hidden;
+    background: var(--sand-dark); border: 2px solid rgba(0,150,199,0.12);
+    display: flex; align-items: center; justify-content: center; position: relative;
+    cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .photo-cell:hover { transform: scale(1.04); box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 1; }
+  .photo-cell img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-cell .placeholder { font-size: 2rem; color: var(--border); }
+  .photo-cell .caption-overlay {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.5); color: #fff; font-size: 0.68rem;
+    padding: 0.3rem 0.5rem; opacity: 0; transition: opacity 0.2s;
+  }
+  .photo-cell:hover .caption-overlay { opacity: 1; }
+  .upload-zone {
+    border: 2.5px dashed rgba(0,150,199,0.35); border-radius: 16px;
+    padding: 2.5rem 1rem; text-align: center; color: var(--text-muted);
+    font-size: 0.88rem; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+    margin-bottom: 1.25rem; background: rgba(0,150,199,0.03);
+    font-weight: 600;
+  }
+  .upload-zone:hover {
+    border-color: var(--coral); background: rgba(255,107,53,0.05);
+    color: var(--coral); transform: scale(1.01);
+  }
+  .upload-zone input[type=file] { display: none; }
+  .future-banner {
+    background: linear-gradient(135deg, #FFF8E1 0%, #FFF0EA 100%);
+    border: 2px solid rgba(255,179,0,0.4); border-radius: 18px;
+    padding: 2rem 1.5rem; text-align: center; color: #7a5c0a;
+    box-shadow: 0 4px 20px rgba(255,179,0,0.12);
+  }
+  .future-banner .big { font-size: 2.5rem; margin-bottom: 0.5rem; }
+  .future-banner p { font-size: 0.85rem; line-height: 1.6; }
+
+  /* ── LIGHTBOX ── */
+  .lightbox { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.88); align-items: center; justify-content: center; }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 90vw; max-height: 85vh; border-radius: 8px; }
+  .lightbox-close { position: fixed; top: 1rem; right: 1.25rem; color: #fff; font-size: 1.8rem; cursor: pointer; background: none; border: none; }
+
+  /* ── MEMBERS ── */
+  .members-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .member-chip {
+    display: flex; align-items: center; gap: 0.5rem;
+    background: var(--white);
+    border: 2px solid rgba(0,150,199,0.2); border-radius: 30px;
+    padding: 0.35rem 1rem 0.35rem 0.4rem;
+    box-shadow: 0 2px 8px rgba(0,100,160,0.08);
+    transition: transform 0.15s;
+  }
+  .member-chip:hover { transform: translateY(-2px); }
+  .member-chip .avatar { width: 30px; height: 30px; font-size: 0.78rem; }
+  .member-chip span { font-size: 0.82rem; font-weight: 600; }
+
+  /* ── TOAST ── */
+  .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 500; background: var(--ocean-dark); color: #fff; padding: 0.7rem 1.25rem; border-radius: 10px; font-size: 0.85rem; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 1.8rem; }
+    .cd-num { font-size: 2rem; }
+    nav button { padding: 0.3rem 0.5rem; font-size: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-logo">🏝 609 沖繩 2刷</div>
+  <button onclick="showSection('home')" class="active" data-nav="home">首頁</button>
+  <button onclick="showSection('itinerary')" data-nav="itinerary">行程</button>
+  <button onclick="showSection('map')" data-nav="map">地圖</button>
+  <button onclick="showSection('weather')" data-nav="weather">天氣</button>
+  <button onclick="showSection('wishes')" data-nav="wishes">許願池</button>
+  <button onclick="showSection('album')" data-nav="album">相簿</button>
+  <div class="nav-auth" id="nav-auth">
+    <button onclick="openAuth()" style="color:rgba(255,255,255,0.6); font-size:0.78rem;">登入</button>
+  </div>
+</nav>
+
+<!-- ── AUTH OVERLAY ── -->
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-box">
+    <h2 id="auth-title">成員登入</h2>
+    <div class="form-group">
+      <label>帳號</label>
+      <input type="text" id="auth-user" placeholder="輸入帳號" />
+    </div>
+    <div class="form-group">
+      <label>密碼</label>
+      <input type="password" id="auth-pass" placeholder="輸入密碼" />
+    </div>
+    <p id="auth-err" style="color:var(--coral);font-size:0.8rem;min-height:1.2em;margin-bottom:0.75rem;"></p>
+    <div class="flex gap-1">
+      <button class="btn btn-primary" onclick="doLogin()" style="flex:1">登入</button>
+      <button class="btn btn-secondary" onclick="closeAuth()">取消</button>
+    </div>
+    <hr class="divider">
+    <p class="text-muted" style="font-size:0.75rem; line-height:1.6">
+      景棠：dylan　／　小良：ram921930<br>
+      趴趴：gordenhu　／　皮條：cky2496　／　壹鴻：eahonlin
+    </p>
+    <hr class="divider">
+    <div class="form-group" id="gh-token-group">
+      <label style="color:var(--teal)">☁️ 雲端相簿 Token（可選）</label>
+      <input type="password" id="gh-token-input" placeholder="貼上 GitHub Token 啟用雲端同步" />
+      <p style="font-size:0.7rem;color:var(--text-muted);margin-top:0.3rem">不填則相簿只存在本機，填入後本次登入可上傳照片到雲端</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── LIGHTBOX ── -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="" />
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════ HOME ══════════════ -->
+<section id="home" class="active">
+  <div class="hero">
+    <div class="text-sm" style="opacity:0.7;margin-bottom:0.5rem;letter-spacing:0.06em;">609 班級旅遊 × 沖繩 2刷</div>
+    <h1>距離起飛<br>還有…</h1>
+    <p class="sub">2027年 3月18日 CI120 08:00 桃園出發</p>
+    <div class="countdown-wrap">
+      <div class="cd-box"><div class="cd-num" id="cd-days">--</div><div class="cd-label">Days</div></div>
+      <div class="cd-box"><div class="cd-num" id="cd-hours">--</div><div class="cd-label">Hours</div></div>
+      <div class="cd-box"><div class="cd-num" id="cd-mins">--</div><div class="cd-label">Mins</div></div>
+      <div class="cd-box"><div class="cd-num" id="cd-secs">--</div><div class="cd-label">Secs</div></div>
+    </div>
+    <div class="hero-tags">
+      <span class="tag">🛫 CI120 / CI121</span>
+      <span class="tag">🏝 5天4夜</span>
+      <span class="tag">👥 5人同行</span>
+      <span class="tag">🚗 全程租車</span>
+    </div>
+  </div>
+  <div style="position:relative;z-index:1;overflow:hidden;line-height:0;margin-top:-2px">
+  <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="width:100%;height:60px;display:block">
+    <path d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,80 L0,80 Z" fill="#FFFCF7"/>
+  </svg>
+</div>
+<div class="page-inner">
+    <div class="members-row" id="members-row"></div>
+    <div class="home-cards">
+      <div class="home-card" onclick="showSection('itinerary')">
+        <div class="icon">🗓</div>
+        <h3>行程專區</h3>
+        <p>5天完整行程規劃</p>
+      </div>
+      <div class="home-card" onclick="showSection('map')">
+        <div class="icon">🗺</div>
+        <h3>景點地圖</h3>
+        <p>北部・南部・那霸</p>
+      </div>
+      <div class="home-card" onclick="showSection('wishes')">
+        <div class="icon">🪙</div>
+        <h3>許願池</h3>
+        <p>丟下你的願望清單</p>
+      </div>
+      <div class="home-card" onclick="showSection('album')">
+        <div class="icon">📷</div>
+        <h3>相簿</h3>
+        <p>2025 回憶 & 2027 期待</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ ITINERARY ══════════════ -->
+<section id="itinerary">
+  <div class="page-inner">
+    <div class="flex items-center justify-between" style="margin-bottom:1.5rem;">
+      <div class="section-title" style="margin-bottom:0">🗓 完整行程</div>
+      <div id="edit-toggle-wrap" style="display:none">
+        <button class="btn btn-secondary btn-sm" onclick="toggleEditMode()">✏️ 編輯模式</button>
+      </div>
+    </div>
+    <div id="itinerary-container"></div>
+  </div>
+</section>
+
+<!-- ══════════════ MAP ══════════════ -->
+<section id="map">
+  <div class="page-inner">
+    <div class="section-title">🗺 景點地圖資訊</div>
+    <div class="map-grid" id="map-grid"></div>
+  </div>
+</section>
+
+<!-- ══════════════ WEATHER ══════════════ -->
+<section id="weather">
+  <div class="page-inner">
+    <div class="section-title">🌤 即時天氣預報</div>
+    <p class="text-muted" style="margin-bottom:1.5rem;font-weight:600">台北出發地 & 沖繩目的地 ｜ 資料來源：Open-Meteo（每次開啟自動更新）</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:1.5rem;margin-bottom:2rem">
+      <!-- Taipei -->
+      <div class="weather-city-card" id="wx-taipei">
+        <div class="wx-city-header" style="background:linear-gradient(135deg,#1565C0,#1976D2)">
+          <div>
+            <div class="wx-city-name">🇹🇼 台北</div>
+            <div class="wx-city-sub">出發地 · Taipei, Taiwan</div>
+          </div>
+          <div class="wx-now-temp" id="tp-now-temp">--</div>
+        </div>
+        <div class="wx-now-row">
+          <div class="wx-now-item"><span class="wx-icon" id="tp-icon">⏳</span><span id="tp-desc">載入中...</span></div>
+          <div class="wx-now-item">💧 <span id="tp-hum">--</span>%</div>
+          <div class="wx-now-item">💨 <span id="tp-wind">--</span> km/h</div>
+        </div>
+        <div class="wx-forecast" id="tp-forecast"></div>
+      </div>
+
+      <!-- Okinawa -->
+      <div class="weather-city-card" id="wx-okinawa">
+        <div class="wx-city-header" style="background:linear-gradient(135deg,#00695C,#00897B)">
+          <div>
+            <div class="wx-city-name">🇯🇵 那霸・沖繩</div>
+            <div class="wx-city-sub">目的地 · Naha, Okinawa</div>
+          </div>
+          <div class="wx-now-temp" id="ok-now-temp">--</div>
+        </div>
+        <div class="wx-now-row">
+          <div class="wx-now-item"><span class="wx-icon" id="ok-icon">⏳</span><span id="ok-desc">載入中...</span></div>
+          <div class="wx-now-item">💧 <span id="ok-hum">--</span>%</div>
+          <div class="wx-now-item">💨 <span id="ok-wind">--</span> km/h</div>
+        </div>
+        <div class="wx-forecast" id="ok-forecast"></div>
+      </div>
+    </div>
+
+    <!-- March 2027 Climate Note -->
+    <div class="card" style="border-left:4px solid var(--coral);background:linear-gradient(135deg,#FFF8F0,#FFF)">
+      <div style="font-size:1rem;font-weight:800;color:var(--coral);margin-bottom:0.75rem">🗓 3月沖繩氣候小提醒（2027出發參考）</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:0.75rem">
+        <div class="climate-tip"><div class="ct-icon">🌡</div><div class="ct-label">氣溫</div><div class="ct-val">18–23°C</div><div class="ct-note">涼爽，早晚需外套</div></div>
+        <div class="climate-tip"><div class="ct-icon">🌧</div><div class="ct-label">降雨機率</div><div class="ct-val">30–40%</div><div class="ct-note">偶有短暫陣雨</div></div>
+        <div class="climate-tip"><div class="ct-icon">☀️</div><div class="ct-label">日照</div><div class="ct-val">約5–6小時/天</div><div class="ct-note">紫外線開始增強</div></div>
+        <div class="climate-tip"><div class="ct-icon">👕</div><div class="ct-label">建議穿著</div><div class="ct-val">薄長袖</div><div class="ct-note">帶薄外套 + 折疊傘</div></div>
+      </div>
+    </div>
+
+    <p class="text-muted" style="text-align:center;margin-top:1rem;font-size:0.75rem">
+      ⏱ 天氣資料每次開啟頁面自動更新 · 預報準確度以氣象局為準
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════ WISHES ══════════════ -->
+<section id="wishes">
+  <div class="page-inner">
+    <div class="section-title">🪙 許願池</div>
+    <p class="text-muted" style="margin-bottom:1.25rem;">把這趟旅行想做的事、想吃的食物、想拍的照片⋯⋯全丟進來！</p>
+    <div class="wish-input-row" id="wish-input-row" style="display:none">
+      <input type="text" id="wish-text" placeholder="輸入你的願望..." maxlength="60" />
+      <button class="btn btn-coral" onclick="addWish()">丟入 🪙</button>
+    </div>
+    <p id="wish-login-hint" class="text-muted text-sm" style="margin-bottom:1.25rem;">登入後可以投入願望</p>
+    <div class="wish-pool" id="wish-pool"></div>
+  </div>
+</section>
+
+<!-- ══════════════ ALBUM ══════════════ -->
+<section id="album">
+  <div class="page-inner">
+    <div class="section-title">📷 旅行相簿</div>
+    <div class="album-tabs">
+      <button class="album-tab active" onclick="switchAlbum('2025')">🌴 2025 初刷回憶</button>
+      <button class="album-tab" onclick="switchAlbum('2027')">✨ 2027 二刷</button>
+    </div>
+    <div class="album-year active" id="album-2025">
+      <div id="upload-zone-2025" style="display:none">
+        <div class="upload-zone" onclick="document.getElementById('file-input-2025').click()">
+          <input type="file" id="file-input-2025" multiple accept="image/*" onchange="handleUpload(event,'2025')" />
+          <div style="font-size:2rem;margin-bottom:0.5rem;">📤</div>
+          <div>點擊上傳 2025 沖繩照片</div>
+          <div style="font-size:0.75rem;margin-top:0.25rem;opacity:0.7">支援 JPG、PNG、HEIC</div>
+        </div>
+      </div>
+      <p id="album-hint-2025" class="text-muted text-sm" style="margin-bottom:1rem;">登入後可上傳照片</p>
+      <div class="photo-grid" id="grid-2025"></div>
+      <p id="empty-2025" class="text-muted text-sm" style="text-align:center;padding:2rem 0;">還沒有照片，登入後上傳 2025 沖繩回憶吧！</p>
+    </div>
+    <div class="album-year" id="album-2027">
+      <div id="upload-zone-2027" style="display:none">
+        <div class="upload-zone" onclick="document.getElementById('file-input-2027').click()">
+          <input type="file" id="file-input-2027" multiple accept="image/*" onchange="handleUpload(event,'2027')" />
+          <div style="font-size:2rem;margin-bottom:0.5rem;">📤</div>
+          <div>旅途中上傳 2027 沖繩照片</div>
+        </div>
+      </div>
+      <p id="album-hint-2027" class="text-muted text-sm" style="margin-bottom:1rem;">登入後可上傳照片</p>
+      <div class="future-banner" id="future-banner-2027">
+        <div class="big">✈️</div>
+        <p><strong>2027年3月18日，我們出發！</strong><br>旅途中拍的照片，就上傳到這裡留念。<br>現在還沒有照片——距離出發 <span id="future-days">?</span> 天，期待！</p>
+      </div>
+      <div class="photo-grid" id="grid-2027"></div>
+    </div>
+  </div>
+</section>
+
+<script>
+const MEMBERS = {
+  dylan:      { pass: '60925', color: '#0B6E9A', emoji: '🎸', name: '景棠' },
+  ram921930:  { pass: '60907', color: '#E8603A', emoji: '🌊', name: '小良' },
+  gordenhu:   { pass: '60922', color: '#1A8C7A', emoji: '🐾', name: '趴趴' },
+  cky2496:    { pass: '60923', color: '#8B5CF6', emoji: '🎯', name: '皮條' },
+  eahonlin:   { pass: '60919', color: '#D4A227', emoji: '📷', name: '壹鴻' },
+};
+
+const GITHUB = {
+  token: null,
+  owner: 'eahonlin-cell',
+  repo:  '609-okinawa',
+  branch: 'main',
+};
+function getToken() {
+  if (GITHUB.token) return GITHUB.token;
+  GITHUB.token = sessionStorage.getItem('gh_tok') || null;
+  return GITHUB.token;
+}
+
+async function githubUploadPhoto(filename, base64data, year) {
+  const path = `photos/${year}/${Date.now()}_${filename}`;
+  const body = JSON.stringify({
+    message: `Upload photo: ${filename}`,
+    content: base64data,
+    branch: GITHUB.branch,
+  });
+  const res = await fetch(
+    `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${path}`,
+    { method: 'PUT', headers: {
+        'Authorization': `token ${getToken()}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github.v3+json',
+    }, body }
+  );
+  const d = await res.json();
+  if (res.ok) return d.content.download_url;
+  throw new Error(d.message || 'Upload failed');
+}
+
+async function githubLoadPhotos(year) {
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/photos/${year}`,
+      { headers: { 'Authorization': `token ${getToken()}`, 'Accept': 'application/vnd.github.v3+json' } }
+    );
+    if (!res.ok) return [];
+    const files = await res.json();
+    return files.filter(f => /\.(jpg|jpeg|png|gif|heic|webp)$/i.test(f.name))
+                .map(f => ({ id: f.sha, src: f.download_url, caption: f.name.replace(/^\d+_/,'').replace(/\.[^.]+$/,''), author: '成員上傳', time: '' }));
+  } catch { return []; }
+}
+
+const ITINERARY = [
+  {
+    day: 1, date: '3/18（四）', theme: '🚗 取車 + 漁港海鮮 + 那霸市區',
+    color: '#0B6E9A',
+    items: [
+      { time: '11:30', title: '那霸機場入境', note: 'CI120 抵達，辦入境、提行李' },
+      { time: '11:45', title: '搭單軌 → 美榮橋站', note: '14分鐘 / 約 NT$50' },
+      { time: '12:00', title: '🚗 ORIX 美榮橋取車', note: '那霸市牧志 2-17-12 / 7人座 MPV' },
+      { time: '12:30', title: '🐟 午餐：海鮮食堂 太陽（牧港漁港）', note: '漁師直營 / エビだけ天丼必點 / ⚠ 僅收現金 / 週一公休' },
+      { time: '14:00', title: '🌿 福州園', note: 'NT$85 / ⚠ 週三公休' },
+      { time: '15:00', title: '🏛 孔子廟（至聖廟）', note: '免費 / 步行2分鐘' },
+      { time: '15:40', title: '⛩ 波上宮 + 海灘散步', note: '免費 / 沖繩最古老神社' },
+      { time: '17:45', title: '入住旅館 Check-in', note: '那霸市區（美榮橋・牧志一帶）' },
+      { time: '19:30', title: '🥩 晚餐：燒肉もとぶ牧場 國際通店', note: '阿古豬 / ⚠ 需提前預約' },
+    ]
+  },
+  {
+    day: 2, date: '3/19（五）', theme: '🌊 北部一日遊（平日人最少）',
+    color: '#084F6E',
+    items: [
+      { time: '07:30', title: '出發北上（約60分鐘）', note: '走沖繩自動車道，許田 IC 出口' },
+      { time: '08:45', title: '☕ 道の駅 許田', note: '必吃：もずく天ぷら・サーターアンダギー / 💡 在此購折扣票！' },
+      { time: '09:45', title: '🍺 Orion ハッピーパーク', note: '1,000日圓含導覽+2杯試飲 / ⚠ 需官網預約 / 週一・週日公休' },
+      { time: '11:15', title: '🏔 嵐山展望台（停10分）', note: '免費 / 俯瞰羽地內海與古宇利島' },
+      { time: '12:00', title: '🐠 海中展望塔', note: '約NT$200 / 360度水中觀景台' },
+      { time: '13:15', title: '🍜 午餐：ひがし食堂（名護）', note: '在地老店 / 全品千圓以內 / 11:00–18:00' },
+      { time: '14:30', title: '🌊 古宇利海洋塔', note: '約NT$270 / 360度海景' },
+      { time: '15:30', title: '🏖 古宇利海灘閒晃', note: '免費 / 透明碧藍' },
+      { time: '18:30', title: '🥩 晚餐：燒肉乃我那霸本店（名護）', note: '炭火阿古豬 / ⚠ 週三公休 / 需預約' },
+      { time: '20:30', title: '返回那霸（約60分鐘）', note: '' },
+    ]
+  },
+  {
+    day: 3, date: '3/20（六）', theme: '🦑 奥武島天婦羅 + 南部史跡 + 首里',
+    color: '#1A237E',
+    items: [
+      { time: '09:00', title: '🏯 識名園（世界遺產）', note: 'NT$85 / ⚠ 週三公休 / 琉球王朝別苑' },
+      { time: '10:30', title: '🏯 首里城', note: '外圍免費 / ⚠ 仍在修復中（2019火災）' },
+      { time: '11:30', title: '🏮 西來院（達磨寺）', note: '免費 / 達磨娃娃滿室 / 可收御朱印' },
+      { time: '13:00', title: '🦑 奥武島天婦羅食べ歩き', note: '大城てんぷら店（現炸酥脆）/ 中本鮮魚てんぷら店（元祖老店）\n每個60–120日圓 / いまいゆ市場2F海景露台' },
+      { time: '14:30', title: '奥武島散步', note: '隨處遇貓 / 土產：もずく・海ぶどう' },
+      { time: '15:00', title: '⛩ 普天滿宮（宜野灣）', note: '免費 / 地下鐘乳石洞現場登記帶領入洞 / ⚠ 洞內禁拍' },
+      { time: '16:30', title: '⚔ 舊海軍司令部壕', note: 'NT$180 / 保存完整二戰地下隧道' },
+      { time: '18:00', title: '🌅 瀨長島 Umikaji Terrace', note: '免費入島 / 黃昏看飛機起降' },
+      { time: '19:30', title: '🥩🥬 晚餐：我那霸燒肉 久茂地店', note: '阿古豬吃到飽5,000日圓 / ⚠ 需預約' },
+    ]
+  },
+  {
+    day: 4, date: '3/21（日）', theme: '🐋 水族館 + 美國村 + 18:00 還車',
+    color: '#283593',
+    items: [
+      { time: '10:00', title: '🐋 DMM かりゆし水族館', note: '那霸小祿 JIAS 4F / NT$700 / 約1.5–2小時' },
+      { time: '12:30', title: '午餐：小祿 AEON 美食街', note: '' },
+      { time: '14:00', title: '🏖 美國村（北谷）逛街', note: '免費 / 美式文化氛圍' },
+      { time: '16:30', title: '🌅 北谷海灘夕陽', note: '⚠ 17:30 前須出發返回' },
+      { time: '17:30', title: '出發返回美榮橋（約25–30分鐘）', note: '⚠ 週日市區有車流，預留時間' },
+      { time: '18:00', title: '🚗 ORIX 美榮橋還車', note: '還車後步行5分鐘至國際通' },
+      { time: '18:30', title: '🥬 晚餐：沖縄料理居酒屋 ぶった', note: '吃到飽4,000日圓 / 苦瓜+阿古豬 / ⚠ 建議預約' },
+    ]
+  },
+  {
+    day: 5, date: '3/22（一）', theme: '✈ CI121 早班機回台',
+    color: '#E8603A',
+    items: [
+      { time: '07:30', title: '早餐 + 最後整理', note: '便利商店或旅館附近' },
+      { time: '08:30', title: 'Check-out → 搭單軌美榮橋→機場', note: '14分鐘 / 09:00前抵達' },
+      { time: '09:15', title: 'CI121 Check-in + 安檢 + 出境', note: '⚠ 早班機約11:30起飛' },
+      { time: '11:30', title: '✈ CI121 起飛', note: '那霸 → 桃園 / 約1小時35分' },
+      { time: '13:05', title: '抵達桃園國際機場', note: '平安返台！' },
+    ]
+  }
+];
+
+const SPOTS = [
+  { emoji: '🦑', name: '奥武島天婦羅', area: '南城市', note: '那覇から約40分 / もずく天・魚天必點 / 大城てんぷら店 週一公休', maps: 'https://maps.google.com/?q=奥武島,沖縄', day: 3 },
+  { emoji: '⛩', name: '波上宮', area: '那霸市', note: '沖繩最古老神社 / 免費 / 旁有波上海灘', maps: 'https://maps.google.com/?q=波上宮,那覇', day: 1 },
+  { emoji: '🌿', name: '福州園', area: '那霸市久米', note: 'NT$85 / ⚠ 週三公休 / 中式庭園', maps: 'https://maps.google.com/?q=福州園,那覇', day: 1 },
+  { emoji: '🏯', name: '首里城', area: '那霸市首里', note: '世界遺產 / ⚠ 修復中 / 外圍免費', maps: 'https://maps.google.com/?q=首里城,那覇', day: 3 },
+  { emoji: '🌿', name: '識名園', area: '那霸市', note: 'NT$85 / ⚠ 週三公休 / 世界遺產', maps: 'https://maps.google.com/?q=識名園,那覇', day: 3 },
+  { emoji: '⚔', name: '舊海軍司令部壕', area: '豐見城市', note: 'NT$180 / 二戰地下隧道', maps: 'https://maps.google.com/?q=旧海軍司令部壕,豊見城', day: 3 },
+  { emoji: '🌅', name: '瀨長島 Umikaji Terrace', area: '豐見城市', note: '免費入島 / 黃昏最美 / 緊鄰機場跑道', maps: 'https://maps.google.com/?q=瀬長島,豊見城', day: 3 },
+  { emoji: '☕', name: '道の駅 許田', area: '名護市', note: '全年無休 / 8:30開 / 折扣票、土產、天婦羅', maps: 'https://maps.google.com/?q=道の駅許田,名護', day: 2 },
+  { emoji: '🍺', name: 'Orion ハッピーパーク', area: '名護市', note: '1,000日圓 / ⚠ 需預約 / ⚠ 週一週日公休', maps: 'https://maps.google.com/?q=オリオンハッピーパーク,名護', day: 2 },
+  { emoji: '🌊', name: '古宇利海洋塔', area: '今歸仁村', note: 'NT$270 / 360度海景', maps: 'https://maps.google.com/?q=古宇利海洋タワー,今帰仁', day: 2 },
+  { emoji: '🐠', name: '海中展望塔', area: '名護市', note: 'NT$200 / 水中觀景台 / 沖繩唯一', maps: 'https://maps.google.com/?q=海中展望塔,名護', day: 2 },
+  { emoji: '⛩', name: '普天滿宮', area: '宜野灣市', note: '免費 / 地下鐘乳石洞 / 洞內禁拍', maps: 'https://maps.google.com/?q=普天満宮,宜野湾', day: 3 },
+  { emoji: '🐋', name: 'DMM かりゆし水族館', area: '那霸小祿', note: 'NT$700 / 那霸市內 / 週日室內好選擇', maps: 'https://maps.google.com/?q=DMMかりゆし水族館,那覇', day: 4 },
+  { emoji: '🏖', name: '美國村', area: '北谷町', note: '免費逛 / 美式風情 / 夕陽絕景', maps: 'https://maps.google.com/?q=美浜アメリカンビレッジ,北谷', day: 4 },
+  { emoji: '🐟', name: '牧港漁港 海鮮食堂太陽', area: '浦添市', note: '⚠ 週一公休 / 11:00–15:30 / 僅收現金', maps: 'https://maps.google.com/?q=海鮮食堂太陽,浦添', day: 1 },
+];
+
+const DAY_BADGE = ['', 'badge-ocean','badge-ocean','badge-teal','badge-gold','badge-coral'];
+
+// ── STATE ──
+let currentUser = null;
+let editMode = false;
+let wishes = [];
+let photos = { '2025': [], '2027': [] };
+let currentAlbum = '2025';
+
+// ── STORAGE HELPERS ──
+async function storeGet(k) {
+  try { const r = await window.storage.get(k); return r ? JSON.parse(r.value) : null; } catch { return null; }
+}
+async function storeSet(k, v) {
+  try { await window.storage.set(k, JSON.stringify(v)); } catch {}
+}
+
+// ── INIT ──
+const WX_CODE = {
+  0:'☀️ 晴天', 1:'🌤 大致晴', 2:'⛅ 局部多雲', 3:'☁️ 陰天',
+  45:'🌫 霧', 48:'🌫 霧淞',
+  51:'🌦 毛毛雨', 53:'🌦 毛毛雨', 55:'🌧 毛毛雨',
+  61:'🌧 小雨', 63:'🌧 中雨', 65:'🌧 大雨',
+  71:'🌨 小雪', 73:'🌨 中雪', 75:'❄️ 大雪',
+  80:'🌦 陣雨', 81:'🌧 陣雨', 82:'⛈ 強陣雨',
+  95:'⛈ 雷雨', 96:'⛈ 雷雨夾雹', 99:'⛈ 強雷雨',
+};
+const WX_ICON_ONLY = {
+  0:'☀️', 1:'🌤', 2:'⛅', 3:'☁️', 45:'🌫', 48:'🌫',
+  51:'🌦', 53:'🌦', 55:'🌧', 61:'🌧', 63:'🌧', 65:'🌧',
+  71:'🌨', 73:'🌨', 75:'❄️', 80:'🌦', 81:'🌧', 82:'⛈',
+  95:'⛈', 96:'⛈', 99:'⛈',
+};
+const WEEKDAYS = ['日','一','二','三','四','五','六'];
+
+async function fetchWeather(lat, lon, ids) {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
+    + `&current=temperature_2m,weathercode,windspeed_10m,relativehumidity_2m`
+    + `&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max`
+    + `&timezone=auto&forecast_days=7`;
+  try {
+    const res = await fetch(url);
+    const d = await res.json();
+    const c = d.current;
+    document.getElementById(ids.temp).textContent = Math.round(c.temperature_2m) + '°C';
+    document.getElementById(ids.icon).textContent = WX_ICON_ONLY[c.weathercode] || '🌡';
+    document.getElementById(ids.desc).textContent = (WX_CODE[c.weathercode] || '').replace(/^[^ ]+ /,'');
+    document.getElementById(ids.hum).textContent = Math.round(c.relativehumidity_2m);
+    document.getElementById(ids.wind).textContent = Math.round(c.windspeed_10m);
+    const fc = document.getElementById(ids.forecast);
+    fc.innerHTML = d.daily.time.map((t, i) => {
+      const dt = new Date(t);
+      const wd = WEEKDAYS[dt.getDay()];
+      const rain = d.daily.precipitation_probability_max[i];
+      return `<div class="wx-day">
+        <div class="wx-day-label">${i===0?'今天':'週'+wd}</div>
+        <div class="wx-day-icon">${WX_ICON_ONLY[d.daily.weathercode[i]]||'🌡'}</div>
+        <div class="wx-day-hi">${Math.round(d.daily.temperature_2m_max[i])}°</div>
+        <div class="wx-day-lo">${Math.round(d.daily.temperature_2m_min[i])}°</div>
+        <div class="wx-day-rain">💧${rain??'--'}%</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById(ids.desc).textContent = '無法載入，請確認網路連線';
+  }
+}
+
+function loadWeather() {
+  fetchWeather(25.0478, 121.5319, {
+    temp:'tp-now-temp', icon:'tp-icon', desc:'tp-desc', hum:'tp-hum', wind:'tp-wind', forecast:'tp-forecast'
+  });
+  fetchWeather(26.2124, 127.6809, {
+    temp:'ok-now-temp', icon:'ok-icon', desc:'ok-desc', hum:'ok-hum', wind:'ok-wind', forecast:'ok-forecast'
+  });
+}
+
+async function init() {
+  startCountdown();
+  loadWeather();
+  renderMembers();
+  renderItinerary();
+  renderMap();
+  wishes = (await storeGet('wishes_609')) || [];
+  renderWishes();
+  showToast('載入雲端相簿中... ☁️');
+  const [p25, p27] = await Promise.all([githubLoadPhotos('2025'), githubLoadPhotos('2027')]);
+  photos['2025'] = p25;
+  photos['2027'] = p27;
+  renderAlbum('2025');
+  renderAlbum('2027');
+}
+
+// ── COUNTDOWN ──
+function startCountdown() {
+  const target = new Date('2027-03-18T08:00:00+08:00');
+  function tick() {
+    const now = new Date();
+    const diff = target - now;
+    if (diff <= 0) {
+      document.getElementById('cd-days').textContent = '0';
+      document.getElementById('cd-hours').textContent = '0';
+      document.getElementById('cd-mins').textContent = '0';
+      document.getElementById('cd-secs').textContent = '起飛！';
+      return;
+    }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    document.getElementById('cd-days').textContent = d;
+    document.getElementById('cd-hours').textContent = String(h).padStart(2,'0');
+    document.getElementById('cd-mins').textContent = String(m).padStart(2,'0');
+    document.getElementById('cd-secs').textContent = String(s).padStart(2,'0');
+    const fd = document.getElementById('future-days');
+    if (fd) fd.textContent = d;
+  }
+  tick(); setInterval(tick, 1000);
+}
+
+// ── MEMBERS ──
+function renderMembers() {
+  const row = document.getElementById('members-row');
+  row.innerHTML = Object.entries(MEMBERS).map(([acc, m]) =>
+    `<div class="member-chip">
+      <div class="avatar" style="background:${m.color}">${m.emoji}</div>
+      <span>${m.name}</span>
+    </div>`
+  ).join('');
+}
+
+// ── NAV ──
+function showSection(id) {
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button[data-nav]').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const btn = document.querySelector(`nav button[data-nav="${id}"]`);
+  if (btn) btn.classList.add('active');
+}
+
+// ── AUTH ──
+function openAuth() { document.getElementById('auth-overlay').classList.add('open'); document.getElementById('auth-err').textContent = ''; }
+function closeAuth() { document.getElementById('auth-overlay').classList.remove('open'); }
+function doLogin() {
+  const u = document.getElementById('auth-user').value.trim();
+  const p = document.getElementById('auth-pass').value;
+  if (MEMBERS[u] && MEMBERS[u].pass === p) {
+    currentUser = u;
+    const tok = document.getElementById('gh-token-input').value.trim();
+    if (tok) { GITHUB.token = tok; sessionStorage.setItem('gh_tok', tok); }
+    closeAuth();
+    updateAuthUI();
+    const hasToken = GITHUB.token;
+    showToast(`歡迎回來，${MEMBERS[u].name} ${MEMBERS[u].emoji}${hasToken?' ☁️ 雲端相簿已啟用':''}`);
+  } else {
+    document.getElementById('auth-err').textContent = '帳號或密碼錯誤';
+  }
+}
+function doLogout() {
+  currentUser = null; updateAuthUI();
+  showToast('已登出');
+}
+function updateAuthUI() {
+  const wrap = document.getElementById('nav-auth');
+  const editWrap = document.getElementById('edit-toggle-wrap');
+  if (currentUser) {
+    const m = MEMBERS[currentUser];
+    wrap.innerHTML = `<span class="user-pill" onclick="doLogout()">
+      <div class="avatar" style="background:${m.color};width:20px;height:20px;font-size:0.65rem">${m.emoji}</div>
+      ${m.name}
+    </span>`;
+    editWrap.style.display = 'block';
+    document.getElementById('wish-input-row').style.display = 'flex';
+    document.getElementById('wish-login-hint').style.display = 'none';
+    document.getElementById('upload-zone-2025').style.display = 'block';
+    document.getElementById('upload-zone-2027').style.display = 'block';
+    document.getElementById('album-hint-2025').style.display = 'none';
+    document.getElementById('album-hint-2027').style.display = 'none';
+  } else {
+    wrap.innerHTML = `<button onclick="openAuth()" style="color:rgba(255,255,255,0.6);font-size:0.78rem;">登入</button>`;
+    editWrap.style.display = 'none';
+    editMode = false;
+    document.getElementById('wish-input-row').style.display = 'none';
+    document.getElementById('wish-login-hint').style.display = 'block';
+    document.getElementById('upload-zone-2025').style.display = 'none';
+    document.getElementById('upload-zone-2027').style.display = 'none';
+    document.getElementById('album-hint-2025').style.display = 'block';
+    document.getElementById('album-hint-2027').style.display = 'block';
+    document.querySelectorAll('.edit-area').forEach(e => e.classList.remove('open'));
+  }
+}
+
+// ── ITINERARY ──
+function renderItinerary() {
+  const el = document.getElementById('itinerary-container');
+  el.innerHTML = ITINERARY.map(day => `
+    <div class="day-block">
+      <div class="day-header" style="background:${day.color}">
+        <div>
+          <h3>Day ${day.day}　${day.date}</h3>
+          <div class="day-sub">${day.theme}</div>
+        </div>
+      </div>
+      <div class="day-body">
+        ${day.items.map((item, i) => `
+          <div class="itinerary-row">
+            <div class="it-time">${item.time}</div>
+            <div class="it-content">
+              <h4>${item.title}</h4>
+              ${item.note ? `<p>${item.note.replace(/\n/g,'<br>')}</p>` : ''}
+            </div>
+          </div>
+        `).join('')}
+        <div class="edit-area" id="edit-day-${day.day}">
+          <div class="form-group">
+            <label>新增備注 / 修改資訊（Day ${day.day}）</label>
+            <textarea id="note-day-${day.day}" rows="3" placeholder="輸入補充資訊、提醒事項..."></textarea>
+          </div>
+          <div id="saved-note-${day.day}" style="margin-bottom:0.75rem;font-size:0.82rem;color:var(--teal)"></div>
+          <button class="btn btn-primary btn-sm" onclick="saveNote(${day.day})">儲存</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  loadNotes();
+}
+
+function toggleEditMode() {
+  if (!currentUser) return;
+  editMode = !editMode;
+  document.querySelectorAll('.edit-area').forEach(e => {
+    e.classList.toggle('open', editMode);
+  });
+  const btn = document.querySelector('#edit-toggle-wrap button');
+  btn.textContent = editMode ? '✅ 儲存完畢' : '✏️ 編輯模式';
+}
+
+async function saveNote(dayNum) {
+  if (!currentUser) return;
+  const val = document.getElementById(`note-day-${dayNum}`).value.trim();
+  const key = `note_day_${dayNum}`;
+  const obj = { text: val, author: MEMBERS[currentUser].name, time: new Date().toLocaleString('zh-TW') };
+  await storeSet(key, obj);
+  showSavedNote(dayNum, obj);
+  showToast('備注已儲存！');
+}
+
+async function loadNotes() {
+  for (let d = 1; d <= 5; d++) {
+    const saved = await storeGet(`note_day_${d}`);
+    if (saved) {
+      document.getElementById(`note-day-${d}`).value = saved.text;
+      showSavedNote(d, saved);
+    }
+  }
+}
+
+function showSavedNote(dayNum, obj) {
+  const el = document.getElementById(`saved-note-${dayNum}`);
+  if (el && obj.text) el.innerHTML = `📌 ${obj.author}（${obj.time}）：${obj.text}`;
+}
+
+// ── MAP ──
+function renderMap() {
+  const grid = document.getElementById('map-grid');
+  grid.innerHTML = SPOTS.map(s => `
+    <div class="map-card">
+      <div class="map-img">${s.emoji}</div>
+      <div class="map-body">
+        <div class="flex items-center gap-1" style="margin-bottom:0.4rem;">
+          <h4>${s.name}</h4>
+          <span class="badge ${DAY_BADGE[s.day]}" style="flex-shrink:0">Day ${s.day}</span>
+        </div>
+        <p style="font-size:0.72rem;color:var(--ocean);font-weight:600;margin-bottom:0.25rem;">📍 ${s.area}</p>
+        <p>${s.note}</p>
+        <a class="map-link" href="${s.maps}" target="_blank">🗺 Google Maps →</a>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── WISHES ──
+const COINS = ['🪙','💫','🌊','🌸','🍺','🦑','🥩','🎸','📷','✨'];
+async function addWish() {
+  if (!currentUser) { openAuth(); return; }
+  const txt = document.getElementById('wish-text').value.trim();
+  if (!txt) return;
+  const wish = {
+    id: Date.now(),
+    text: txt,
+    author: MEMBERS[currentUser].name,
+    color: MEMBERS[currentUser].color,
+    coin: COINS[Math.floor(Math.random() * COINS.length)],
+    time: new Date().toLocaleDateString('zh-TW')
+  };
+  wishes.unshift(wish);
+  await storeSet('wishes_609', wishes);
+  document.getElementById('wish-text').value = '';
+  renderWishes();
+  showToast('願望投入！🪙');
+}
+
+async function deleteWish(id) {
+  if (!currentUser) return;
+  const w = wishes.find(x => x.id === id);
+  if (w && w.author !== currentUser) { showToast('只能刪除自己的願望'); return; }
+  wishes = wishes.filter(x => x.id !== id);
+  await storeSet('wishes_609', wishes);
+  renderWishes();
+}
+
+function renderWishes() {
+  const pool = document.getElementById('wish-pool');
+  if (!wishes.length) { pool.innerHTML = `<p class="text-muted text-sm" style="text-align:center;padding:2rem 0;grid-column:1/-1">許願池空空的，快來投入你的願望！</p>`; return; }
+  pool.innerHTML = wishes.map(w => `
+    <div class="wish-bubble">
+      <span class="wish-coin">${w.coin}</span>
+      <p>${w.text}</p>
+      <div class="wish-meta">
+        <span class="wish-author" style="color:${w.color}">✦ ${w.author} · ${w.time}</span>
+        ${currentUser && w.author === currentUser ? `<button class="wish-del" onclick="deleteWish(${w.id})">✕</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── ALBUM ──
+function switchAlbum(year) {
+  currentAlbum = year;
+  document.querySelectorAll('.album-tab').forEach((t,i) => t.classList.toggle('active', i === (year==='2025'?0:1)));
+  document.querySelectorAll('.album-year').forEach((y,i) => y.classList.toggle('active', i === (year==='2025'?0:1)));
+}
+
+function handleUpload(e, year) {
+  if (!currentUser) { openAuth(); return; }
+  if (!getToken()) {
+    showToast('請登入時填入 GitHub Token 才能上傳到雲端');
+    return;
+  }
+  const files = Array.from(e.target.files);
+  showToast(`上傳中... 共 ${files.length} 張 📤`);
+  files.forEach(f => {
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target.result;
+      const base64 = dataUrl.split(',')[1];
+      try {
+        const url = await githubUploadPhoto(f.name, base64, year);
+        const photo = { id: Date.now() + Math.random(), src: url, caption: f.name.replace(/^\d+_/,'').replace(/\.[^.]+$/,''), author: MEMBERS[currentUser].name, time: new Date().toLocaleDateString('zh-TW') };
+        photos[year].unshift(photo);
+        renderAlbum(year);
+        showToast('照片上傳成功！☁️ 已同步到雲端');
+      } catch(err) {
+        showToast('上傳失敗：' + err.message);
+      }
+    };
+    reader.readAsDataURL(f);
+  });
+  e.target.value = '';
+}
+
+function renderAlbum(year) {
+  const grid = document.getElementById(`grid-${year}`);
+  const empty = document.getElementById(`empty-${year}`);
+  const futureBanner = document.getElementById('future-banner-2027');
+  if (!photos[year] || !photos[year].length) {
+    grid.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    if (futureBanner && year === '2027') futureBanner.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  if (futureBanner && year === '2027') futureBanner.style.display = 'none';
+  grid.innerHTML = photos[year].map(p => `
+    <div class="photo-cell" onclick="openLightbox('${p.id}','${year}')">
+      <img src="${p.src}" alt="${p.caption}" loading="lazy" />
+      <div class="caption-overlay">${p.caption} — ${p.author}</div>
+    </div>
+  `).join('');
+}
+
+function openLightbox(id, year) {
+  const photo = photos[year].find(p => String(p.id) === String(id));
+  if (!photo) return;
+  document.getElementById('lightbox-img').src = photo.src;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── KEYBOARD ──
+document.getElementById('wish-text').addEventListener('keydown', e => { if (e.key === 'Enter') addWish(); });
+document.getElementById('auth-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeAuth(); closeLightbox(); } });
+
+init();
+</script>
+</body>
+</html>

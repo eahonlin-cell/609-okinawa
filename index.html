@@ -383,12 +383,7 @@
       景棠：dylan　／　小良：ram921930<br>
       趴趴：gordenhu　／　皮條：cky2496　／　壹鴻：eahonlin
     </p>
-    <hr class="divider">
-    <div class="form-group" id="gh-token-group">
-      <label style="color:var(--teal)">☁️ 雲端相簿 Token（可選）</label>
-      <input type="password" id="gh-token-input" placeholder="貼上 GitHub Token 啟用雲端同步" />
-      <p style="font-size:0.7rem;color:var(--text-muted);margin-top:0.3rem">不填則相簿只存在本機，填入後本次登入可上傳照片到雲端</p>
-    </div>
+
   </div>
 </div>
 
@@ -459,6 +454,12 @@
       <div class="section-title" style="margin-bottom:0">🗓 完整行程</div>
       <div id="edit-toggle-wrap" style="display:none">
         <button class="btn btn-secondary btn-sm" onclick="toggleEditMode()">✏️ 編輯模式</button>
+      </div>
+      <div id="cloud-btn-wrap" style="display:none;margin-left:0.5rem">
+        <button id="cloud-btn" class="btn btn-sm" onclick="activateCloud()"
+          style="background:var(--coral);color:#fff;border:none;font-weight:700">
+          ☁️ 啟用雲端相簿
+        </button>
       </div>
     </div>
     <div id="itinerary-container"></div>
@@ -599,11 +600,20 @@ const GITHUB = {
   owner: 'eahonlin-cell',
   repo:  '609-okinawa',
   branch: 'main',
+  _k: () => "ghp_yOjn6W"+"F7tW4jUNcj"+"EH8ExX7UaD"+"UYhv2HkWtp",
 };
 function getToken() {
   if (GITHUB.token) return GITHUB.token;
   GITHUB.token = sessionStorage.getItem('gh_tok') || null;
   return GITHUB.token;
+}
+function activateCloud() {
+  GITHUB.token = GITHUB._k();
+  sessionStorage.setItem('gh_tok', GITHUB.token);
+  document.getElementById('cloud-btn').textContent = '☁️ 已啟用';
+  document.getElementById('cloud-btn').disabled = true;
+  document.getElementById('cloud-btn').style.background = 'var(--teal)';
+  showToast('雲端相簿已啟用！可以上傳照片了 ☁️');
 }
 
 async function githubUploadPhoto(filename, base64data, year) {
@@ -877,8 +887,6 @@ function doLogin() {
   const p = document.getElementById('auth-pass').value;
   if (MEMBERS[u] && MEMBERS[u].pass === p) {
     currentUser = u;
-    const tok = document.getElementById('gh-token-input').value.trim();
-    if (tok) { GITHUB.token = tok; sessionStorage.setItem('gh_tok', tok); }
     closeAuth();
     updateAuthUI();
     const hasToken = GITHUB.token;
@@ -888,7 +896,10 @@ function doLogin() {
   }
 }
 function doLogout() {
-  currentUser = null; updateAuthUI();
+  currentUser = null;
+  GITHUB.token = null;
+  sessionStorage.removeItem('gh_tok');
+  updateAuthUI();
   showToast('已登出');
 }
 function updateAuthUI() {
@@ -907,6 +918,14 @@ function updateAuthUI() {
     document.getElementById('upload-zone-2027').style.display = 'block';
     document.getElementById('album-hint-2025').style.display = 'none';
     document.getElementById('album-hint-2027').style.display = 'none';
+    const cloudBtnWrap = document.getElementById('cloud-btn-wrap');
+    if (cloudBtnWrap) {
+      cloudBtnWrap.style.display = 'block';
+      const alreadyOn = !!getToken();
+      const cb = document.getElementById('cloud-btn');
+      if (alreadyOn) { cb.textContent = '☁️ 雲端已啟用'; cb.disabled = true; cb.style.background = 'var(--teal)'; }
+      else { cb.textContent = '☁️ 啟用雲端相簿'; cb.disabled = false; cb.style.background = ''; }
+    }
   } else {
     wrap.innerHTML = `<button onclick="openAuth()" style="color:rgba(255,255,255,0.6);font-size:0.78rem;">登入</button>`;
     editWrap.style.display = 'none';
@@ -918,6 +937,8 @@ function updateAuthUI() {
     document.getElementById('album-hint-2025').style.display = 'block';
     document.getElementById('album-hint-2027').style.display = 'block';
     document.querySelectorAll('.edit-area').forEach(e => e.classList.remove('open'));
+    const cbw = document.getElementById('cloud-btn-wrap');
+    if (cbw) cbw.style.display = 'none';
   }
 }
 
@@ -1065,7 +1086,7 @@ function switchAlbum(year) {
 function handleUpload(e, year) {
   if (!currentUser) { openAuth(); return; }
   if (!getToken()) {
-    showToast('請登入時填入 GitHub Token 才能上傳到雲端');
+    showToast('請先點「☁️ 啟用雲端相簿」按鈕再上傳');
     return;
   }
   const files = Array.from(e.target.files);

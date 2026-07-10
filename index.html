@@ -889,8 +889,19 @@ function showSection(id) {
 }
 
 // ── AUTH ──
-function openAuth() { document.getElementById('auth-overlay').classList.add('open'); document.getElementById('auth-err').textContent = ''; }
-function closeAuth() { document.getElementById('auth-overlay').classList.remove('open'); }
+function openAuth() {
+  if (currentUser) return;
+  document.getElementById('auth-user').value = '';
+  document.getElementById('auth-pass').value = '';
+  document.getElementById('auth-err').textContent = '';
+  document.getElementById('auth-overlay').classList.add('open');
+}
+function closeAuth() {
+  document.getElementById('auth-overlay').classList.remove('open');
+  document.getElementById('auth-user').value = '';
+  document.getElementById('auth-pass').value = '';
+  document.getElementById('auth-err').textContent = '';
+}
 function doLogin() {
   const u = document.getElementById('auth-user').value.trim();
   const p = document.getElementById('auth-pass').value;
@@ -913,14 +924,17 @@ function doLogout() {
   updateAuthUI();
   showToast('已登出');
 }
+function confirmLogout() {
+  if (confirm(`確定要登出 ${MEMBERS[currentUser]?.name || ''} 嗎？`)) doLogout();
+}
 function updateAuthUI() {
   const wrap = document.getElementById('nav-auth');
   const editWrap = document.getElementById('edit-toggle-wrap');
   if (currentUser) {
     const m = MEMBERS[currentUser];
-    wrap.innerHTML = `<span class="user-pill" onclick="doLogout()">
+    wrap.innerHTML = `<span class="user-pill" onclick="confirmLogout()" title="點擊登出">
       <div class="avatar" style="background:${m.color};width:20px;height:20px;font-size:0.65rem">${m.emoji}</div>
-      ${m.name}
+      ${m.name} ▾
     </span>`;
     // 顯示 nav 雲端按鈕
     const cnw = document.getElementById('cloud-nav-wrap');

@@ -356,6 +356,12 @@
   <button onclick="showSection('weather')" data-nav="weather">天氣</button>
   <button onclick="showSection('wishes')" data-nav="wishes">許願池</button>
   <button onclick="showSection('album')" data-nav="album">相簿</button>
+  <div id="cloud-nav-wrap" style="display:none;margin-right:0.25rem">
+    <button id="cloud-nav-btn" onclick="activateCloud()"
+      style="background:var(--coral);color:#fff;border:none;border-radius:6px;padding:0.3rem 0.75rem;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit">
+      ☁️ 啟用雲端
+    </button>
+  </div>
   <div class="nav-auth" id="nav-auth">
     <button onclick="openAuth()" style="color:rgba(255,255,255,0.6); font-size:0.78rem;">登入</button>
   </div>
@@ -610,10 +616,13 @@ function getToken() {
 function activateCloud() {
   GITHUB.token = GITHUB._k();
   sessionStorage.setItem('gh_tok', GITHUB.token);
-  document.getElementById('cloud-btn').textContent = '☁️ 已啟用';
-  document.getElementById('cloud-btn').disabled = true;
-  document.getElementById('cloud-btn').style.background = 'var(--teal)';
-  showToast('雲端相簿已啟用！可以上傳照片了 ☁️');
+  // 更新行程頁按鈕
+  const cb = document.getElementById('cloud-btn');
+  if (cb) { cb.textContent = '☁️ 已啟用'; cb.disabled = true; cb.style.background = 'var(--teal)'; cb.style.color = '#fff'; }
+  // 更新 nav 按鈕
+  const nb = document.getElementById('cloud-nav-btn');
+  if (nb) { nb.textContent = '☁️ 已啟用'; nb.disabled = true; nb.style.background = 'var(--teal)'; }
+  showToast('雲端相簿已啟用！去相簿頁上傳照片吧 ☁️');
 }
 
 async function githubUploadPhoto(filename, base64data, year) {
@@ -899,6 +908,8 @@ function doLogout() {
   currentUser = null;
   GITHUB.token = null;
   sessionStorage.removeItem('gh_tok');
+  const cnw = document.getElementById('cloud-nav-wrap');
+  if (cnw) cnw.style.display = 'none';
   updateAuthUI();
   showToast('已登出');
 }
@@ -911,6 +922,14 @@ function updateAuthUI() {
       <div class="avatar" style="background:${m.color};width:20px;height:20px;font-size:0.65rem">${m.emoji}</div>
       ${m.name}
     </span>`;
+    // 顯示 nav 雲端按鈕
+    const cnw = document.getElementById('cloud-nav-wrap');
+    const cnb = document.getElementById('cloud-nav-btn');
+    if (cnw) cnw.style.display = 'block';
+    if (cnb) {
+      if (getToken()) { cnb.textContent = '☁️ 已啟用'; cnb.disabled = true; cnb.style.background = 'var(--teal)'; }
+      else { cnb.textContent = '☁️ 啟用雲端'; cnb.disabled = false; cnb.style.background = 'var(--coral)'; }
+    }
     editWrap.style.display = 'block';
     document.getElementById('wish-input-row').style.display = 'flex';
     document.getElementById('wish-login-hint').style.display = 'none';

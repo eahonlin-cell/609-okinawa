@@ -285,14 +285,14 @@
   }
   .photo-del-btn {
     position: absolute; top: 6px; right: 6px;
-    background: rgba(220,50,50,0.85); color: #fff;
-    border: none; border-radius: 50%; width: 26px; height: 26px;
-    font-size: 0.75rem; font-weight: 700; cursor: pointer;
+    background: rgba(220,40,40,0.9); color: #fff;
+    border: none; border-radius: 50%; width: 28px; height: 28px;
+    font-size: 0.8rem; font-weight: 900; cursor: pointer;
     display: none; align-items: center; justify-content: center;
-    z-index: 2; line-height: 1; transition: background 0.15s;
+    z-index: 10; line-height: 1; transition: background 0.15s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
   }
-  .photo-del-btn:hover { background: rgba(180,20,20,0.95); }
-  .photo-cell:hover .photo-del-btn { display: flex; }
+  .photo-del-btn:hover { background: rgba(180,0,0,1); transform: scale(1.1); }
     .photo-cell:hover { transform: scale(1.04); box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 1; }
   .photo-cell img { width: 100%; height: 100%; object-fit: cover; }
   .photo-cell .placeholder { font-size: 2rem; color: var(--border); }
@@ -1201,10 +1201,12 @@ function renderAlbum(year) {
   if (futureBanner && year === '2027') futureBanner.style.display = 'none';
   const canDelete = currentUser && getToken();
   grid.innerHTML = photos[year].map(p => `
-    <div class="photo-cell" onclick="openLightbox('${p.id}','${year}')">
-      <img src="${p.src}" alt="${p.caption}" loading="lazy" />
-      <div class="caption-overlay">${p.caption}${p.author ? ' — '+p.author : ''}</div>
-      ${canDelete ? `<button class="photo-del-btn" onclick="deletePhoto('${p.id}','${year}',event)" title="刪除">✕</button>` : ''}
+    <div class="photo-cell-wrap">
+      <div class="photo-cell" onclick="openLightbox('${p.id}','${year}')">
+        <img src="${p.src}" alt="${p.caption}" loading="lazy" />
+        <div class="caption-overlay">${p.caption}${p.author ? ' — '+p.author : ''}</div>
+      </div>
+      ${canDelete ? `<button class="photo-del-btn" onclick="deletePhoto('${p.id}','${year}',event)" title="刪除這張照片">✕</button>` : ''}
     </div>
   `).join('');
 }

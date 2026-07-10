@@ -283,7 +283,17 @@
     display: flex; align-items: center; justify-content: center; position: relative;
     cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
   }
-  .photo-cell:hover { transform: scale(1.04); box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 1; }
+  .photo-del-btn {
+    position: absolute; top: 6px; right: 6px;
+    background: rgba(220,50,50,0.85); color: #fff;
+    border: none; border-radius: 50%; width: 26px; height: 26px;
+    font-size: 0.75rem; font-weight: 700; cursor: pointer;
+    display: none; align-items: center; justify-content: center;
+    z-index: 2; line-height: 1; transition: background 0.15s;
+  }
+  .photo-del-btn:hover { background: rgba(180,20,20,0.95); }
+  .photo-cell:hover .photo-del-btn { display: flex; }
+    .photo-cell:hover { transform: scale(1.04); box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 1; }
   .photo-cell img { width: 100%; height: 100%; object-fit: cover; }
   .photo-cell .placeholder { font-size: 2rem; color: var(--border); }
   .photo-cell .caption-overlay {
@@ -654,7 +664,7 @@ async function githubLoadPhotos(year) {
     if (!res.ok) return [];
     const files = await res.json();
     return files.filter(f => /\.(jpg|jpeg|png|gif|heic|webp)$/i.test(f.name))
-                .map(f => ({ id: f.sha, src: f.download_url, caption: f.name.replace(/^\d+_/,'').replace(/\.[^.]+$/,''), author: '成員上傳', time: '' }));
+                .map(f => ({ id: f.sha, sha: f.sha, path: f.path, src: f.download_url, caption: f.name.replace(/^\d+_/,'').replace(/\.[^.]+$/,''), author: '成員上傳', time: '' }));
   } catch { return []; }
 }
 
@@ -823,6 +833,39 @@ function loadWeather() {
   fetchWeather(26.2124, 127.6809, {
     temp:'ok-now-temp', icon:'ok-icon', desc:'ok-desc', hum:'ok-hum', wind:'ok-wind', forecast:'ok-forecast'
   });
+}
+
+async function githubDeletePhoto(path, sha) {
+  const res = await fetch(
+    `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${path}`,
+    { method: 'DELETE', headers: {
+        'Authorization': `token ${getToken()}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github.v3+json',
+      },
+      body: JSON.stringify({ message: `Delete photo: ${path}`, sha, branch: GITHUB.branch })
+    }
+  );
+  if (!res.ok) { const d = await res.json(); throw new Error(d.message || 'Delete failed'); }
+  return true;
+}
+
+async function deletePhoto(id, year, event) {
+  event.stopPropagation();
+  if (!currentUser) { showToast('請先登入'); return; }
+  if (!getToken()) { showToast('請先啟用雲端相簿'); return; }
+  if (!confirm('確定要刪除這張照片嗎？')) return;
+  const photo = photos[year].find(p => String(p.id) === String(id));
+  if (!photo) return;
+  showToast('刪除中...');
+  try {
+    await githubDeletePhoto(photo.path, photo.sha);
+    photos[year] = photos[year].filter(p => String(p.id) !== String(id));
+    renderAlbum(year);
+    showToast('已刪除 🗑');
+  } catch(e) {
+    showToast('刪除失敗：' + e.message);
+  }
 }
 
 async function init() {
@@ -1156,10 +1199,12 @@ function renderAlbum(year) {
   }
   if (empty) empty.style.display = 'none';
   if (futureBanner && year === '2027') futureBanner.style.display = 'none';
+  const canDelete = currentUser && getToken();
   grid.innerHTML = photos[year].map(p => `
     <div class="photo-cell" onclick="openLightbox('${p.id}','${year}')">
       <img src="${p.src}" alt="${p.caption}" loading="lazy" />
-      <div class="caption-overlay">${p.caption} — ${p.author}</div>
+      <div class="caption-overlay">${p.caption}${p.author ? ' — '+p.author : ''}</div>
+      ${canDelete ? `<button class="photo-del-btn" onclick="deletePhoto('${p.id}','${year}',event)" title="刪除">✕</button>` : ''}
     </div>
   `).join('');
 }

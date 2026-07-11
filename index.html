@@ -883,14 +883,26 @@ async function ghGetLogs() {
     );
     if (!res.ok) return null;
     const d = await res.json();
-    const content = JSON.parse(atob(d.content.replace(/\n/g,'')));
+    const content = JSON.parse(base64ToUtf8(d.content));
     return { data: content, sha: d.sha };
   } catch { return null; }
 }
 
+function utf8ToBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = '';
+  bytes.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin);
+}
+function base64ToUtf8(b64) {
+  const bin = atob(b64.replace(/\n/g,''));
+  const bytes = new Uint8Array([...bin].map(c => c.charCodeAt(0)));
+  return new TextDecoder().decode(bytes);
+}
+
 async function ghSetLogs(allLogs, sha) {
   if (!getToken()) return;
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(allLogs, null, 0))));
+  const content = utf8ToBase64(JSON.stringify(allLogs, null, 0));
   const body = JSON.stringify({
     message: '📋 更新活動歷程',
     content,

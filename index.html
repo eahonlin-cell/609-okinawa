@@ -266,6 +266,13 @@
   .wish-coin { font-size: 1.3rem; position: absolute; top: -8px; right: -6px; }
 
   /* ── ALBUM ── */
+  .album-toolbar { display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .btn-danger { background:#DC2626; color:#fff; }
+  .btn-danger:hover { background:#B91C1C; }
+  .btn-outline-danger { background:transparent; color:#DC2626; border:2px solid #DC2626; }
+  .btn-outline-danger:hover { background:#FEE2E2; }
+  .delete-mode-hint { font-size:0.8rem; color:#DC2626; font-weight:700; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
   .album-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0; }
   .album-tab {
     padding: 0.6rem 1.25rem; border-radius: 8px 8px 0 0; font-size: 0.9rem;
@@ -276,23 +283,14 @@
   .album-tab.active { color: var(--coral); border-bottom-color: var(--coral); }
   .album-year { display: none; }
   .album-year.active { display: block; }
-  .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.75rem; }
+  .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem; }
   .photo-cell {
     aspect-ratio: 1; border-radius: 14px; overflow: hidden;
     background: var(--sand-dark); border: 2px solid rgba(0,150,199,0.12);
     display: flex; align-items: center; justify-content: center; position: relative;
     cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
   }
-  .photo-del-btn {
-    position: absolute; top: 6px; right: 6px;
-    background: rgba(220,40,40,0.9); color: #fff;
-    border: none; border-radius: 50%; width: 28px; height: 28px;
-    font-size: 0.8rem; font-weight: 900; cursor: pointer;
-    display: none; align-items: center; justify-content: center;
-    z-index: 10; line-height: 1; transition: background 0.15s;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  }
-  .photo-del-btn:hover { background: rgba(180,0,0,1); transform: scale(1.1); }
+  .photo-del-btn { display:none; }
     .photo-cell:hover { transform: scale(1.04); box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 1; }
   .photo-cell img { width: 100%; height: 100%; object-fit: cover; }
   .photo-cell .placeholder { font-size: 2rem; color: var(--border); }
@@ -581,6 +579,7 @@
         </div>
       </div>
       <p id="album-hint-2025" class="text-muted text-sm" style="margin-bottom:1rem;">登入後可上傳照片</p>
+      <div class="album-toolbar" id="album-toolbar-2025"></div>
       <div class="photo-grid" id="grid-2025"></div>
       <p id="empty-2025" class="text-muted text-sm" style="text-align:center;padding:2rem 0;">還沒有照片，登入後上傳 2025 沖繩回憶吧！</p>
     </div>
@@ -597,6 +596,7 @@
         <div class="big">✈️</div>
         <p><strong>2027年3月18日，我們出發！</strong><br>旅途中拍的照片，就上傳到這裡留念。<br>現在還沒有照片——距離出發 <span id="future-days">?</span> 天，期待！</p>
       </div>
+      <div class="album-toolbar" id="album-toolbar-2027"></div>
       <div class="photo-grid" id="grid-2027"></div>
     </div>
   </div>
@@ -643,9 +643,15 @@ async function activateCloud() {
 }
 
 async function githubUploadPhoto(filename, base64data, year) {
-  const path = `photos/${year}/${Date.now()}_${filename}`;
+  // 檢查重複：比對現有照片的原始檔名
+  const existing = photos[year] || [];
+  const isDup = existing.some(p => p.filename === filename);
+  if (isDup) return { skip: true, filename };
+
+  const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const path = `photos/${year}/${Date.now()}_${safeName}`;
   const body = JSON.stringify({
-    message: `Upload photo: ${filename}`,
+    message: `Upload: ${safeName}`,
     content: base64data,
     branch: GITHUB.branch,
   });
@@ -658,7 +664,7 @@ async function githubUploadPhoto(filename, base64data, year) {
     }, body }
   );
   const d = await res.json();
-  if (res.ok) return d.content.download_url;
+  if (res.ok) return { url: d.content.download_url, path, filename };
   throw new Error(d.message || 'Upload failed');
 }
 
@@ -671,7 +677,13 @@ async function githubLoadPhotos(year) {
     if (!res.ok) return [];
     const files = await res.json();
     return files.filter(f => /\.(jpg|jpeg|png|gif|heic|webp)$/i.test(f.name))
-                .map(f => ({ id: f.sha, sha: f.sha, path: f.path, src: f.download_url, caption: f.name.replace(/^\d+_/,'').replace(/\.[^.]+$/,''), author: '成員上傳', time: '' }));
+                .map(f => ({
+                  id: f.sha, sha: f.sha, path: f.path,
+                  filename: f.name.replace(/^\d+_/,''),
+                  src: f.download_url,
+                  caption: f.name.replace(/^\d+_/,'').replace(/\.[^.]+$/,''),
+                  author: '成員', time: ''
+                }));
   } catch { return []; }
 }
 
@@ -1161,38 +1173,72 @@ function renderWishes() {
 
 // ── ALBUM ──
 function switchAlbum(year) {
+  if (deleteMode.active) exitDeleteMode(deleteMode.year);
   currentAlbum = year;
   document.querySelectorAll('.album-tab').forEach((t,i) => t.classList.toggle('active', i === (year==='2025'?0:1)));
   document.querySelectorAll('.album-year').forEach((y,i) => y.classList.toggle('active', i === (year==='2025'?0:1)));
 }
 
-function handleUpload(e, year) {
+async function handleUpload(e, year) {
   if (!currentUser) { openAuth(); return; }
-  if (!getToken()) {
-    showToast('請先點「☁️ 啟用雲端相簿」按鈕再上傳');
-    return;
-  }
+  if (!getToken()) { showToast('請先點「☁️ 啟用雲端」再上傳'); return; }
   const files = Array.from(e.target.files);
-  showToast(`上傳中... 共 ${files.length} 張 📤`);
-  files.forEach(f => {
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const dataUrl = ev.target.result;
-      const base64 = dataUrl.split(',')[1];
-      try {
-        const url = await githubUploadPhoto(f.name, base64, year);
-        const photo = { id: Date.now() + Math.random(), src: url, caption: f.name.replace(/^\d+_/,'').replace(/\.[^.]+$/,''), author: MEMBERS[currentUser].name, time: new Date().toLocaleDateString('zh-TW') };
-        photos[year].unshift(photo);
-        renderAlbum(year);
-        showToast('照片上傳成功！☁️ 已同步到雲端');
-      } catch(err) {
-        showToast('上傳失敗：' + err.message);
-      }
-    };
-    reader.readAsDataURL(f);
-  });
+  if (!files.length) return;
   e.target.value = '';
+
+  let done = 0, skipped = 0, failed = 0;
+  showToast(`準備上傳 ${files.length} 張...`);
+
+  for (const f of files) {
+    try {
+      const base64 = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = ev => res(ev.target.result.split(',')[1]);
+        r.onerror = rej;
+        r.readAsDataURL(f);
+      });
+      const result = await githubUploadPhoto(f.name, base64, year);
+      if (result.skip) {
+        skipped++;
+        showToast(`⏭ 跳過重複：${f.name}`);
+      } else {
+        const photo = {
+          id: result.path,
+          sha: null,
+          path: result.path,
+          filename: f.name,
+          src: result.url,
+          caption: f.name.replace(/^\d+_/,'').replace(/\.[^.]+$/,''),
+          author: MEMBERS[currentUser].name,
+          time: new Date().toLocaleDateString('zh-TW')
+        };
+        photos[year].unshift(photo);
+        done++;
+        renderAlbum(year);
+        showToast(`上傳中 ${done}/${files.length - skipped} 張... ☁️`);
+      }
+    } catch(err) {
+      failed++;
+      showToast(`❌ ${f.name} 失敗：${err.message.substring(0,30)}`);
+      await new Promise(r => setTimeout(r, 1000));
+    }
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  let msg = `完成！成功 ${done} 張`;
+  if (skipped) msg += ` / 跳過重複 ${skipped} 張`;
+  if (failed) msg += ` / 失敗 ${failed} 張`;
+  showToast(msg + ' 📷');
+
+  // 重新從 GitHub 載入確保 sha 正確（刪除用）
+  if (done > 0) {
+    const fresh = await githubLoadPhotos(year);
+    photos[year] = fresh;
+    renderAlbum(year);
+  }
 }
+
+let deleteMode = { active: false, year: null, selected: new Set() };
 
 function renderAlbum(year) {
   const grid = document.getElementById(`grid-${year}`);
@@ -1202,20 +1248,99 @@ function renderAlbum(year) {
     grid.innerHTML = '';
     if (empty) empty.style.display = 'block';
     if (futureBanner && year === '2027') futureBanner.style.display = 'block';
+    renderAlbumToolbar(year);
     return;
   }
   if (empty) empty.style.display = 'none';
   if (futureBanner && year === '2027') futureBanner.style.display = 'none';
-  const canDelete = currentUser && getToken();
-  grid.innerHTML = photos[year].map(p => `
-    <div class="photo-cell-wrap">
-      <div class="photo-cell" onclick="openLightbox('${p.id}','${year}')">
-        <img src="${p.src}" alt="${p.caption}" loading="lazy" />
-        <div class="caption-overlay">${p.caption}${p.author ? ' — '+p.author : ''}</div>
+  const inDelMode = deleteMode.active && deleteMode.year === year;
+  grid.innerHTML = photos[year].map(p => {
+    const isSel = deleteMode.selected.has(String(p.id));
+    const wrapClass = `photo-cell-wrap${inDelMode ? ' delete-mode' : ''}${isSel ? ' selected-del' : ''}`;
+    const onclick = inDelMode
+      ? `toggleSelectDel('${p.id}','${year}')`
+      : `openLightbox('${p.id}','${year}')`;
+    return `<div class="${wrapClass}" onclick="${onclick}">
+      <div class="photo-cell">
+        <img src="${p.src}" alt="${p.caption}" loading="lazy" style="width:100%;height:100%;object-fit:cover" />
+        <div class="caption-overlay">${p.caption}${p.author?' — '+p.author:''}</div>
       </div>
-      ${canDelete ? `<button class="photo-del-btn" onclick="deletePhoto('${p.id}','${year}',event)" title="刪除這張照片">✕</button>` : ''}
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
+  renderAlbumToolbar(year);
+}
+
+function renderAlbumToolbar(year) {
+  const tb = document.getElementById(`album-toolbar-${year}`);
+  if (!tb) return;
+  const canDel = currentUser && getToken();
+  const inDelMode = deleteMode.active && deleteMode.year === year;
+  const selCount = deleteMode.selected.size;
+  const count = (photos[year] || []).length;
+  if (!canDel || count === 0) { tb.innerHTML = ''; return; }
+  if (!inDelMode) {
+    tb.innerHTML = `<button class="btn btn-sm btn-outline-danger" onclick="enterDeleteMode('${year}')">🗑 選擇刪除</button>
+      <span class="text-muted text-sm">共 ${count} 張</span>`;
+  } else {
+    tb.innerHTML = `<span class="delete-mode-hint">🗑 刪除模式：點選要刪除的照片</span>
+      <button class="btn btn-sm btn-danger" onclick="confirmDeleteSelected('${year}')" ${selCount===0?'disabled':''}>
+        刪除已選 ${selCount} 張
+      </button>
+      <button class="btn btn-sm btn-secondary" onclick="exitDeleteMode('${year}')">取消</button>`;
+  }
+}
+
+function enterDeleteMode(year) {
+  deleteMode = { active: true, year, selected: new Set() };
+  renderAlbum(year);
+}
+
+function exitDeleteMode(year) {
+  deleteMode = { active: false, year: null, selected: new Set() };
+  renderAlbum(year);
+}
+
+function toggleSelectDel(id, year) {
+  const sid = String(id);
+  if (deleteMode.selected.has(sid)) deleteMode.selected.delete(sid);
+  else deleteMode.selected.add(sid);
+  renderAlbum(year);
+}
+
+async function confirmDeleteSelected(year) {
+  const selIds = Array.from(deleteMode.selected);
+  if (!selIds.length) return;
+  if (!confirm(`確定刪除選取的 ${selIds.length} 張照片？此動作無法復原。`)) return;
+  showToast(`刪除中... 0/${selIds.length}`);
+  let done = 0, failed = 0;
+  for (const id of selIds) {
+    const photo = photos[year].find(p => String(p.id) === id);
+    if (!photo) continue;
+    try {
+      let sha = photo.sha;
+      if (!sha) {
+        const info = await fetch(
+          `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${photo.path}`,
+          { headers: { 'Authorization': `token ${getToken()}`, 'Accept': 'application/vnd.github.v3+json' } }
+        );
+        const d = await info.json();
+        sha = d.sha;
+      }
+      await githubDeletePhoto(photo.path, sha);
+      photos[year] = photos[year].filter(p => String(p.id) !== id);
+      done++;
+      showToast(`刪除中... ${done}/${selIds.length}`);
+    } catch(e) {
+      failed++;
+      showToast(`❌ 刪除失敗：${e.message.substring(0,30)}`);
+    }
+    await new Promise(r => setTimeout(r, 300));
+  }
+  exitDeleteMode(year);
+  renderAlbum(year);
+  let msg = `已刪除 ${done} 張`;
+  if (failed) msg += `，${failed} 張失敗`;
+  showToast(msg + ' 🗑');
 }
 
 function openLightbox(id, year) {

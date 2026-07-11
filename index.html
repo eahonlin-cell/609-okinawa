@@ -342,6 +342,32 @@
   .member-chip .avatar { width: 30px; height: 30px; font-size: 0.78rem; }
   .member-chip span { font-size: 0.82rem; font-weight: 600; }
 
+  /* ── LOGS ── */
+  .log-item {
+    display:flex; align-items:flex-start; gap:0.65rem;
+    padding:0.65rem 1rem; border-bottom:1px solid var(--sand-dark);
+    font-size:0.82rem; transition:background 0.15s;
+  }
+  .log-item:last-child { border-bottom:none; }
+  .log-item:hover { background:var(--sand); }
+  .log-avatar {
+    width:28px; height:28px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.7rem; font-weight:700; color:#fff; flex-shrink:0; margin-top:1px;
+  }
+  .log-body { flex:1; }
+  .log-name { font-weight:700; color:var(--ocean-dark); }
+  .log-action { color:var(--text-muted); margin-left:0.25rem; }
+  .log-time { font-size:0.72rem; color:var(--text-muted); margin-top:0.15rem; }
+  .log-detail { font-size:0.75rem; color:var(--text-muted); margin-top:0.15rem; font-style:italic; }
+  .log-badge { font-size:0.68rem; font-weight:700; padding:0.1rem 0.45rem; border-radius:10px; margin-left:0.3rem; }
+  .log-badge-in { background:var(--teal-light); color:#065f4a; }
+  .log-badge-out { background:var(--sand-dark); color:var(--text-muted); }
+  .log-badge-edit { background:var(--ocean-light); color:var(--ocean-dark); }
+  .log-badge-photo { background:var(--coral-light); color:#9a2a10; }
+  .log-badge-del { background:#FEE2E2; color:#991B1B; }
+  .log-empty { padding:2rem; text-align:center; color:var(--text-muted); font-size:0.85rem; }
+
   /* ── TOAST ── */
   .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 500; background: var(--ocean-dark); color: #fff; padding: 0.7rem 1.25rem; border-radius: 10px; font-size: 0.85rem; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
   .toast.show { opacity: 1; }
@@ -364,6 +390,7 @@
   <button onclick="showSection('weather')" data-nav="weather">天氣</button>
   <button onclick="showSection('wishes')" data-nav="wishes">許願池</button>
   <button onclick="showSection('album')" data-nav="album">相簿</button>
+  <button onclick="showSection('logs')" data-nav="logs">📋 歷程</button>
   <div id="cloud-nav-wrap" style="display:none;margin-right:0.25rem">
     <button id="cloud-nav-btn" onclick="activateCloud()"
       style="background:var(--coral);color:#fff;border:none;border-radius:6px;padding:0.3rem 0.75rem;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit">
@@ -374,6 +401,46 @@
     <button onclick="openAuth()" style="color:rgba(255,255,255,0.6); font-size:0.78rem;">登入</button>
   </div>
 </nav>
+
+<!-- ══════════════ LOGS ══════════════ -->
+<section id="logs">
+  <div class="page-inner">
+    <div class="section-title">📋 活動歷程</div>
+    <p class="text-muted" style="margin-bottom:1.5rem">記錄所有成員的登入與編輯紀錄</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.25rem;margin-bottom:2rem">
+      <!-- 登入紀錄 -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="background:var(--ocean);color:#fff;padding:0.85rem 1.1rem;font-weight:800;font-size:0.95rem;display:flex;justify-content:space-between;align-items:center">
+          <span>🔐 登入紀錄</span>
+          <span id="login-log-count" style="font-size:0.75rem;opacity:0.8"></span>
+        </div>
+        <div id="login-log-list" style="max-height:400px;overflow-y:auto;padding:0"></div>
+      </div>
+      <!-- 編輯歷程 -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="background:var(--teal);color:#fff;padding:0.85rem 1.1rem;font-weight:800;font-size:0.95rem;display:flex;justify-content:space-between;align-items:center">
+          <span>✏️ 編輯歷程</span>
+          <span id="edit-log-count" style="font-size:0.75rem;opacity:0.8"></span>
+        </div>
+        <div id="edit-log-list" style="max-height:400px;overflow-y:auto;padding:0"></div>
+      </div>
+    </div>
+
+    <!-- 照片上傳紀錄 -->
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="background:var(--coral);color:#fff;padding:0.85rem 1.1rem;font-weight:800;font-size:0.95rem;display:flex;justify-content:space-between;align-items:center">
+        <span>📷 照片上傳 / 刪除紀錄</span>
+        <span id="photo-log-count" style="font-size:0.75rem;opacity:0.8"></span>
+      </div>
+      <div id="photo-log-list" style="max-height:300px;overflow-y:auto;padding:0"></div>
+    </div>
+
+    <div style="text-align:center;margin-top:1.5rem">
+      <p class="text-muted text-sm">歷程資料儲存於本機，清除瀏覽器快取後將重置</p>
+    </div>
+  </div>
+</section>
 
 <!-- ── AUTH OVERLAY ── -->
 <div class="auth-overlay" id="auth-overlay">
@@ -795,6 +862,91 @@ async function storeSet(k, v) {
   try { await window.storage.set(k, JSON.stringify(v)); } catch {}
 }
 
+// ── ACTIVITY LOG ──
+const LOG_KEYS = { login: 'log_login_609', edit: 'log_edit_609', photo: 'log_photo_609' };
+const MAX_LOG = 100;
+
+async function appendLog(type, entry) {
+  const logs = (await storeGet(LOG_KEYS[type])) || [];
+  logs.unshift({ ...entry, ts: new Date().toISOString() });
+  if (logs.length > MAX_LOG) logs.length = MAX_LOG;
+  await storeSet(LOG_KEYS[type], logs);
+  renderLogs();
+}
+
+function memberColor(name) {
+  const m = Object.values(MEMBERS).find(x => x.name === name);
+  return m ? m.color : '#888';
+}
+function memberEmoji(name) {
+  const m = Object.values(MEMBERS).find(x => x.name === name);
+  return m ? m.emoji : '👤';
+}
+
+function fmtTime(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('zh-TW') + ' ' + d.toLocaleTimeString('zh-TW', {hour:'2-digit',minute:'2-digit'});
+}
+
+async function renderLogs() {
+  const [loginLogs, editLogs, photoLogs] = await Promise.all([
+    storeGet(LOG_KEYS.login) || [],
+    storeGet(LOG_KEYS.edit)  || [],
+    storeGet(LOG_KEYS.photo) || [],
+  ]);
+
+  function logItem(l, type) {
+    const color = memberColor(l.name);
+    const emoji = memberEmoji(l.name);
+    let badge = '', action = '', detail = '';
+    if (type === 'login') {
+      badge = l.action === 'login'
+        ? '<span class="log-badge log-badge-in">登入</span>'
+        : '<span class="log-badge log-badge-out">登出</span>';
+      action = l.action === 'login' ? '登入了網站' : '登出了網站';
+    } else if (type === 'edit') {
+      badge = '<span class="log-badge log-badge-edit">編輯</span>';
+      action = `修改了 Day ${l.day} 備注`;
+      detail = l.preview ? `"${l.preview}"` : '';
+    } else if (type === 'photo') {
+      const isDel = l.action === 'delete';
+      badge = isDel
+        ? '<span class="log-badge log-badge-del">刪除</span>'
+        : '<span class="log-badge log-badge-photo">上傳</span>';
+      action = isDel ? `刪除了 ${l.count||1} 張照片` : `上傳了 ${l.count||1} 張照片`;
+      detail = l.album ? `相簿：${l.album === '2025' ? '2025 初刷' : '2027 二刷'}` : '';
+    }
+    return `<div class="log-item">
+      <div class="log-avatar" style="background:${color}">${emoji}</div>
+      <div class="log-body">
+        <div><span class="log-name">${l.name}</span><span class="log-action">${action}</span>${badge}</div>
+        ${detail ? `<div class="log-detail">${detail}</div>` : ''}
+        <div class="log-time">🕐 ${fmtTime(l.ts)}</div>
+      </div>
+    </div>`;
+  }
+
+  const ll = document.getElementById('login-log-list');
+  const el = document.getElementById('edit-log-list');
+  const pl = document.getElementById('photo-log-list');
+  const lc = document.getElementById('login-log-count');
+  const ec = document.getElementById('edit-log-count');
+  const pc = document.getElementById('photo-log-count');
+
+  if (ll) ll.innerHTML = loginLogs.length
+    ? loginLogs.map(l => logItem(l,'login')).join('')
+    : '<div class="log-empty">尚無登入紀錄</div>';
+  if (el) el.innerHTML = editLogs.length
+    ? editLogs.map(l => logItem(l,'edit')).join('')
+    : '<div class="log-empty">尚無編輯紀錄</div>';
+  if (pl) pl.innerHTML = photoLogs.length
+    ? photoLogs.map(l => logItem(l,'photo')).join('')
+    : '<div class="log-empty">尚無照片操作紀錄</div>';
+  if (lc) lc.textContent = `共 ${loginLogs.length} 筆`;
+  if (ec) ec.textContent = `共 ${editLogs.length} 筆`;
+  if (pc) pc.textContent = `共 ${photoLogs.length} 筆`;
+}
+
 // ── INIT ──
 const WX_CODE = {
   0:'☀️ 晴天', 1:'🌤 大致晴', 2:'⛅ 局部多雲', 3:'☁️ 陰天',
@@ -897,6 +1049,7 @@ async function init() {
   renderWishes();
   renderAlbum('2025');
   renderAlbum('2027');
+  renderLogs();
 }
 
 // ── COUNTDOWN ──
@@ -944,6 +1097,7 @@ function showSection(id) {
   document.getElementById(id).classList.add('active');
   const btn = document.querySelector(`nav button[data-nav="${id}"]`);
   if (btn) btn.classList.add('active');
+  if (id === 'logs') renderLogs();
 }
 
 // ── AUTH ──
@@ -969,6 +1123,7 @@ function doLogin() {
     updateAuthUI();
     renderAlbum('2025');
     renderAlbum('2027');
+    appendLog('login', { name: MEMBERS[u].name, action: 'login' });
     const hasToken = GITHUB.token;
     showToast(`歡迎回來，${MEMBERS[u].name} ${MEMBERS[u].emoji}${hasToken?' ☁️ 雲端相簿已啟用':''}`);
   } else {
@@ -976,6 +1131,8 @@ function doLogin() {
   }
 }
 function doLogout() {
+  const name = currentUser ? MEMBERS[currentUser].name : null;
+  if (name) appendLog('login', { name, action: 'logout' });
   currentUser = null;
   GITHUB.token = null;
   sessionStorage.removeItem('gh_tok');
@@ -1089,6 +1246,11 @@ async function saveNote(dayNum) {
   const obj = { text: val, author: MEMBERS[currentUser].name, time: new Date().toLocaleString('zh-TW') };
   await storeSet(key, obj);
   showSavedNote(dayNum, obj);
+  appendLog('edit', {
+    name: MEMBERS[currentUser].name,
+    day: dayNum,
+    preview: val.substring(0, 30) + (val.length > 30 ? '...' : '')
+  });
   showToast('備注已儲存！');
 }
 
@@ -1232,6 +1394,7 @@ async function handleUpload(e, year) {
 
   // 重新從 GitHub 載入確保 sha 正確（刪除用）
   if (done > 0) {
+    appendLog('photo', { name: MEMBERS[currentUser].name, action: 'upload', count: done, album: year });
     const fresh = await githubLoadPhotos(year);
     photos[year] = fresh;
     renderAlbum(year);
@@ -1336,6 +1499,7 @@ async function confirmDeleteSelected(year) {
     }
     await new Promise(r => setTimeout(r, 300));
   }
+  if (done > 0) appendLog('photo', { name: MEMBERS[currentUser].name, action: 'delete', count: done, album: year });
   exitDeleteMode(year);
   renderAlbum(year);
   let msg = `已刪除 ${done} 張`;

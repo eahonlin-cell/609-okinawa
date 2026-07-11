@@ -1239,23 +1239,68 @@ async function init() {
 
 // ── CHECKLIST ──
 const CHECKLIST = [
-  { id:'passport',  icon:'🛂', label:'護照效期確認', sub:'出發時護照須剩餘 6 個月以上（2027/3/18 前需有效至 2027/9/18）' },
-  { id:'flight',    icon:'✈️', label:'訂機票',       sub:'CI120 去程 / CI121 回程 · 桃園 ↔ 那霸' },
-  { id:'car',       icon:'🚗', label:'租車',         sub:'ORIX 美榮橋站前店 · 7人座 MPV · 3/18 取車 / 3/21 還車' },
-  { id:'hotel',     icon:'🏨', label:'訂房',         sub:'那霸市區 3 晚 · 建議美榮橋 / 牧志一帶' },
-  { id:'license',   icon:'📄', label:'換駕照譯本',   sub:'至監理所辦理日文譯本（約 100 元，當天可取）' },
-  { id:'currency',  icon:'💴', label:'外幣兌換',      sub:'日幣現金 · 建議每人約 NT$8,000–12,000（含餐食・門票）' },
-  { id:'transfer',  icon:'🚌', label:'機場接送',      sub:'確認往返桃園機場交通（自行開車 / 客運 / 接送服務）' },
+  { id:'passport', icon:'🛂', label:'護照效期確認' },
+  { id:'flight',   icon:'✈️', label:'訂機票' },
+  { id:'car',      icon:'🚗', label:'租車' },
+  { id:'hotel',    icon:'🏨', label:'訂房' },
+  { id:'license',  icon:'📄', label:'換駕照譯本' },
+  { id:'currency', icon:'💴', label:'外幣兌換' },
+  { id:'transfer', icon:'🚌', label:'機場接送' },
 ];
 
 const CL_KEY = 'checklist_609';
+const CL_GH_PATH = 'data/checklist.json';
+
+async function clGhLoad() {
+  if (!getToken()) return null;
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${CL_GH_PATH}`,
+      { headers:{ 'Authorization':`token ${getToken()}`, 'Accept':'application/vnd.github.v3+json' }, cache:'no-store' }
+    );
+    if (!res.ok) return null;
+    const d = await res.json();
+    return { data: JSON.parse(base64ToUtf8(d.content)), sha: d.sha };
+  } catch { return null; }
+}
+
+async function clGhSave(data, sha) {
+  if (!getToken()) return;
+  const content = utf8ToBase64(JSON.stringify(data));
+  const body = JSON.stringify({
+    message:'✅ 更新行前 Checklist',
+    content, branch: GITHUB.branch,
+    ...(sha ? { sha } : {})
+  });
+  try {
+    await fetch(
+      `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${CL_GH_PATH}`,
+      { method:'PUT', headers:{
+          'Authorization':`token ${getToken()}`,
+          'Content-Type':'application/json',
+          'Accept':'application/vnd.github.v3+json',
+        }, body }
+    );
+  } catch(e) { console.warn('CL sync fail:', e); }
+}
 
 async function clLoad() {
+  if (getToken()) {
+    const gh = await clGhLoad();
+    if (gh?.data) {
+      await storeSet(CL_KEY, gh.data);
+      return gh.data;
+    }
+  }
   return (await storeGet(CL_KEY)) || {};
 }
 
 async function clSave(data) {
   await storeSet(CL_KEY, data);
+  if (getToken()) {
+    const gh = await clGhLoad();
+    await clGhSave(data, gh?.sha || null);
+  }
 }
 
 async function clToggle(itemId, memberName) {
@@ -1306,7 +1351,6 @@ async function renderChecklist() {
       <div class="checklist-item-icon">${allDone ? '✅' : someDone ? '🔄' : item.icon}</div>
       <div class="checklist-item-body">
         <div class="checklist-item-label ${allDone?'done-text':''}">${item.label}</div>
-        <div class="checklist-item-sub">${item.sub}</div>
         <div class="checklist-member-row">${chips}</div>
       </div>
       <div style="font-size:0.75rem;font-weight:800;color:${allDone?'var(--teal)':someDone?'var(--gold)':'var(--border)'};flex-shrink:0;min-width:36px;text-align:center">

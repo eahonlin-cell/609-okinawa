@@ -368,6 +368,77 @@
   .log-badge-del { background:#FEE2E2; color:#991B1B; }
   .log-empty { padding:2rem; text-align:center; color:var(--text-muted); font-size:0.85rem; }
 
+  /* ── CHECKLIST ── */
+  .checklist-wrap { margin-top:2rem; }
+  .checklist-title {
+    font-size:1.15rem; font-weight:900; color:var(--ocean-dark);
+    margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;
+    border-left:4px solid var(--gold); padding-left:0.75rem;
+  }
+  .checklist-progress-bar-wrap {
+    background:var(--sand-dark); border-radius:99px; height:12px;
+    margin-bottom:1.5rem; overflow:hidden; position:relative;
+  }
+  .checklist-progress-bar {
+    height:100%; border-radius:99px;
+    background:linear-gradient(90deg, var(--teal), #00C9A7);
+    transition:width 0.5s cubic-bezier(.4,0,.2,1);
+    position:relative;
+  }
+  .checklist-progress-bar::after {
+    content:'';
+    position:absolute; right:0; top:0; bottom:0; width:16px;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4));
+    border-radius:99px;
+  }
+  .checklist-progress-label {
+    text-align:right; font-size:0.78rem; font-weight:800;
+    color:var(--teal); margin-top:-1.2rem; margin-bottom:1rem;
+  }
+  .checklist-items { display:flex; flex-direction:column; gap:0.6rem; }
+  .checklist-item {
+    background:var(--white); border-radius:12px;
+    border:1.5px solid var(--border);
+    padding:0.75rem 1rem; display:flex; align-items:center; gap:0.75rem;
+    transition:border-color 0.2s, box-shadow 0.2s;
+  }
+  .checklist-item.done {
+    border-color:rgba(0,137,123,0.35);
+    background:linear-gradient(90deg, rgba(0,137,123,0.04), #fff);
+  }
+  .checklist-item-icon { font-size:1.3rem; flex-shrink:0; width:28px; text-align:center; }
+  .checklist-item-body { flex:1; }
+  .checklist-item-label { font-size:0.9rem; font-weight:700; color:var(--text); }
+  .checklist-item-label.done-text { text-decoration:line-through; color:var(--text-muted); }
+  .checklist-item-sub { font-size:0.72rem; color:var(--text-muted); margin-top:0.1rem; }
+  .checklist-member-row {
+    display:flex; gap:0.3rem; flex-wrap:wrap; margin-top:0.4rem;
+  }
+  .checklist-member-chip {
+    display:inline-flex; align-items:center; gap:0.2rem;
+    font-size:0.68rem; font-weight:700; padding:0.15rem 0.5rem;
+    border-radius:20px; cursor:pointer; transition:all 0.15s;
+    border:1.5px solid transparent;
+  }
+  .checklist-member-chip.unchecked {
+    background:var(--sand-dark); color:var(--text-muted);
+    border-color:var(--border);
+  }
+  .checklist-member-chip.checked {
+    color:#fff;
+    box-shadow:0 2px 6px rgba(0,0,0,0.15);
+  }
+  .checklist-member-chip:hover { transform:scale(1.05); }
+  .checklist-overall {
+    margin-top:1rem; padding:0.85rem 1rem;
+    background:linear-gradient(135deg, var(--teal-light), #fff);
+    border-radius:12px; border:1.5px solid rgba(0,137,123,0.25);
+    display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;
+  }
+  .checklist-overall-stat { text-align:center; }
+  .checklist-overall-num { font-size:1.5rem; font-weight:900; color:var(--teal); }
+  .checklist-overall-lbl { font-size:0.68rem; color:var(--text-muted); font-weight:600; }
+
   /* ── TOAST ── */
   .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 500; background: var(--ocean-dark); color: #fff; padding: 0.7rem 1.25rem; border-radius: 10px; font-size: 0.85rem; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
   .toast.show { opacity: 1; }
@@ -528,6 +599,23 @@
         <h3>相簿</h3>
         <p>2025 回憶 & 2027 期待</p>
       </div>
+    </div>
+
+    <!-- ── CHECKLIST ── -->
+    <div class="checklist-wrap">
+      <div class="checklist-title">✅ 行前準備 Checklist</div>
+
+      <!-- 整體進度條 -->
+      <div class="checklist-progress-bar-wrap">
+        <div class="checklist-progress-bar" id="cl-bar" style="width:0%"></div>
+      </div>
+      <div class="checklist-progress-label" id="cl-label">0 / 7 項完成</div>
+
+      <!-- 各項目 -->
+      <div class="checklist-items" id="cl-items"></div>
+
+      <!-- 統計 -->
+      <div class="checklist-overall" id="cl-overall"></div>
     </div>
   </div>
 </section>
@@ -1146,6 +1234,123 @@ async function init() {
   renderAlbum('2025');
   renderAlbum('2027');
   renderLogs();
+  renderChecklist();
+}
+
+// ── CHECKLIST ──
+const CHECKLIST = [
+  { id:'passport',  icon:'🛂', label:'護照效期確認', sub:'出發時護照須剩餘 6 個月以上（2027/3/18 前需有效至 2027/9/18）' },
+  { id:'flight',    icon:'✈️', label:'訂機票',       sub:'CI120 去程 / CI121 回程 · 桃園 ↔ 那霸' },
+  { id:'car',       icon:'🚗', label:'租車',         sub:'ORIX 美榮橋站前店 · 7人座 MPV · 3/18 取車 / 3/21 還車' },
+  { id:'hotel',     icon:'🏨', label:'訂房',         sub:'那霸市區 3 晚 · 建議美榮橋 / 牧志一帶' },
+  { id:'license',   icon:'📄', label:'換駕照譯本',   sub:'至監理所辦理日文譯本（約 100 元，當天可取）' },
+  { id:'currency',  icon:'💴', label:'外幣兌換',      sub:'日幣現金 · 建議每人約 NT$8,000–12,000（含餐食・門票）' },
+  { id:'transfer',  icon:'🚌', label:'機場接送',      sub:'確認往返桃園機場交通（自行開車 / 客運 / 接送服務）' },
+];
+
+const CL_KEY = 'checklist_609';
+
+async function clLoad() {
+  return (await storeGet(CL_KEY)) || {};
+}
+
+async function clSave(data) {
+  await storeSet(CL_KEY, data);
+}
+
+async function clToggle(itemId, memberName) {
+  if (!currentUser) { openAuth(); return; }
+  const data = await clLoad();
+  if (!data[itemId]) data[itemId] = {};
+  if (data[itemId][memberName]) {
+    delete data[itemId][memberName];
+  } else {
+    data[itemId][memberName] = true;
+  }
+  await clSave(data);
+  renderChecklist();
+}
+
+async function renderChecklist() {
+  const data = await clLoad();
+  const memberNames = Object.values(MEMBERS).map(m => m.name);
+  const totalMembers = memberNames.length;
+  const itemEl = document.getElementById('cl-items');
+  const barEl  = document.getElementById('cl-bar');
+  const lblEl  = document.getElementById('cl-label');
+  const overall = document.getElementById('cl-overall');
+  if (!itemEl) return;
+
+  let totalDone = 0;
+
+  itemEl.innerHTML = CHECKLIST.map(item => {
+    const checked = data[item.id] || {};
+    const checkedNames = Object.keys(checked).filter(n => checked[n]);
+    const allDone = checkedNames.length === totalMembers;
+    const someDone = checkedNames.length > 0;
+    if (allDone) totalDone++;
+
+    const chips = memberNames.map(name => {
+      const m = Object.values(MEMBERS).find(x => x.name === name);
+      const isDone = !!checked[name];
+      const style = isDone ? `background:${m.color};border-color:${m.color}` : '';
+      return `<span class="checklist-member-chip ${isDone?'checked':'unchecked'}"
+        style="${style}"
+        onclick="clToggle('${item.id}','${name}')"
+        title="${isDone?'點擊取消':'點擊勾選'}">
+        ${m.emoji} ${name}${isDone?' ✓':''}
+      </span>`;
+    }).join('');
+
+    return `<div class="checklist-item ${allDone?'done':''}">
+      <div class="checklist-item-icon">${allDone ? '✅' : someDone ? '🔄' : item.icon}</div>
+      <div class="checklist-item-body">
+        <div class="checklist-item-label ${allDone?'done-text':''}">${item.label}</div>
+        <div class="checklist-item-sub">${item.sub}</div>
+        <div class="checklist-member-row">${chips}</div>
+      </div>
+      <div style="font-size:0.75rem;font-weight:800;color:${allDone?'var(--teal)':someDone?'var(--gold)':'var(--border)'};flex-shrink:0;min-width:36px;text-align:center">
+        ${checkedNames.length}/${totalMembers}
+      </div>
+    </div>`;
+  }).join('');
+
+  // 進度條（以「全員完成」項目數計算）
+  const pct = Math.round(totalDone / CHECKLIST.length * 100);
+  if (barEl) {
+    barEl.style.width = pct + '%';
+    barEl.style.background = pct === 100
+      ? 'linear-gradient(90deg,#059669,#10B981)'
+      : pct >= 60
+        ? 'linear-gradient(90deg,var(--teal),#00C9A7)'
+        : 'linear-gradient(90deg,var(--ocean),var(--teal))';
+  }
+  if (lblEl) {
+    lblEl.textContent = pct === 100
+      ? '🎉 全部完成！出發囉！'
+      : `全員完成 ${totalDone} / ${CHECKLIST.length} 項（${pct}%）`;
+    lblEl.style.color = pct === 100 ? '#059669' : 'var(--teal)';
+  }
+
+  // 個人統計
+  if (overall) {
+    const stats = memberNames.map(name => {
+      const m = Object.values(MEMBERS).find(x => x.name === name);
+      const cnt = CHECKLIST.filter(item => data[item.id]?.[name]).length;
+      const pctP = Math.round(cnt / CHECKLIST.length * 100);
+      return `<div class="checklist-overall-stat" style="flex:1;min-width:70px">
+        <div style="width:36px;height:36px;border-radius:50%;background:${m.color};
+          display:flex;align-items:center;justify-content:center;
+          font-size:0.9rem;margin:0 auto 0.25rem">${m.emoji}</div>
+        <div style="font-size:0.78rem;font-weight:800;color:${m.color}">${name}</div>
+        <div class="checklist-overall-num" style="color:${m.color};font-size:1.1rem">${cnt}/${CHECKLIST.length}</div>
+        <div class="checklist-overall-lbl">${pctP}%</div>
+      </div>`;
+    }).join('');
+    overall.innerHTML = `
+      <div style="font-size:0.85rem;font-weight:800;color:var(--teal);width:100%;margin-bottom:0.5rem">👥 個人完成狀況</div>
+      ${stats}`;
+  }
 }
 
 // ── COUNTDOWN ──
@@ -1219,6 +1424,7 @@ function doLogin() {
     updateAuthUI();
     renderAlbum('2025');
     renderAlbum('2027');
+    renderChecklist();
     appendLog('login', { name: MEMBERS[u].name, action: 'login' });
     const hasToken = GITHUB.token;
     showToast(`歡迎回來，${MEMBERS[u].name} ${MEMBERS[u].emoji}${hasToken?' ☁️ 雲端相簿已啟用':''}`);

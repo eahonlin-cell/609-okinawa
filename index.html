@@ -406,7 +406,11 @@
 <section id="logs">
   <div class="page-inner">
     <div class="section-title">📋 活動歷程</div>
-    <p class="text-muted" style="margin-bottom:1.5rem">記錄所有成員的登入與編輯紀錄</p>
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap">
+      <p class="text-muted" style="margin:0">記錄所有成員的登入與編輯紀錄</p>
+      <button class="btn btn-sm btn-secondary" onclick="renderLogs();showToast('已重新整理 ✅')">🔄 重新整理</button>
+      <span id="log-sync-hint" class="text-sm" style="color:var(--teal)"></span>
+    </div>
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.25rem;margin-bottom:2rem">
       <!-- 登入紀錄 -->
@@ -866,12 +870,70 @@ async function storeSet(k, v) {
 const LOG_KEYS = { login: 'log_login_609', edit: 'log_edit_609', photo: 'log_photo_609' };
 const MAX_LOG = 100;
 
+// GitHub logs.json 路徑
+const LOGS_PATH = 'logs/logs.json';
+
+async function ghGetLogs() {
+  if (!getToken()) return null;
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${LOGS_PATH}`,
+      { headers: { 'Authorization': `token ${getToken()}`, 'Accept': 'application/vnd.github.v3+json' },
+        cache: 'no-store' }
+    );
+    if (!res.ok) return null;
+    const d = await res.json();
+    const content = JSON.parse(atob(d.content.replace(/\n/g,'')));
+    return { data: content, sha: d.sha };
+  } catch { return null; }
+}
+
+async function ghSetLogs(allLogs, sha) {
+  if (!getToken()) return;
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(allLogs, null, 0))));
+  const body = JSON.stringify({
+    message: '📋 更新活動歷程',
+    content,
+    branch: GITHUB.branch,
+    ...(sha ? { sha } : {})
+  });
+  try {
+    await fetch(
+      `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${LOGS_PATH}`,
+      { method: 'PUT', headers: {
+          'Authorization': `token ${getToken()}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/vnd.github.v3+json',
+        }, body }
+    );
+  } catch(e) { console.warn('Log sync failed:', e); }
+}
+
 async function appendLog(type, entry) {
-  const logs = (await storeGet(LOG_KEYS[type])) || [];
-  logs.unshift({ ...entry, ts: new Date().toISOString() });
-  if (logs.length > MAX_LOG) logs.length = MAX_LOG;
-  await storeSet(LOG_KEYS[type], logs);
+  const newEntry = { ...entry, ts: new Date().toISOString() };
+
+  // 1. 先更新本機
+  const localLogs = (await storeGet(LOG_KEYS[type])) || [];
+  localLogs.unshift(newEntry);
+  if (localLogs.length > MAX_LOG) localLogs.length = MAX_LOG;
+  await storeSet(LOG_KEYS[type], localLogs);
   renderLogs();
+
+  // 2. 若有 token，同步到 GitHub
+  if (!getToken()) return;
+  try {
+    const result = await ghGetLogs();
+    const allLogs = result?.data || { login: [], edit: [], photo: [] };
+    const sha = result?.sha || null;
+    allLogs[type] = allLogs[type] || [];
+    allLogs[type].unshift(newEntry);
+    if (allLogs[type].length > MAX_LOG) allLogs[type].length = MAX_LOG;
+    await ghSetLogs(allLogs, sha);
+    // 同步回本機（確保與 GitHub 一致）
+    await storeSet(LOG_KEYS.login, allLogs.login || []);
+    await storeSet(LOG_KEYS.edit,  allLogs.edit  || []);
+    await storeSet(LOG_KEYS.photo, allLogs.photo || []);
+  } catch(e) { console.warn('GitHub log sync error:', e); }
 }
 
 function memberColor(name) {
@@ -889,11 +951,27 @@ function fmtTime(iso) {
 }
 
 async function renderLogs() {
-  const [loginLogs, editLogs, photoLogs] = await Promise.all([
-    storeGet(LOG_KEYS.login) || [],
-    storeGet(LOG_KEYS.edit)  || [],
-    storeGet(LOG_KEYS.photo) || [],
-  ]);
+  // 優先從 GitHub 讀（跨裝置同步），fallback 本機
+  let loginLogs, editLogs, photoLogs;
+  const gh = await ghGetLogs();
+  if (gh?.data) {
+    loginLogs = gh.data.login || [];
+    editLogs  = gh.data.edit  || [];
+    photoLogs = gh.data.photo || [];
+    // 同步到本機快取
+    await storeSet(LOG_KEYS.login, loginLogs);
+    await storeSet(LOG_KEYS.edit,  editLogs);
+    await storeSet(LOG_KEYS.photo, photoLogs);
+  } else {
+    [loginLogs, editLogs, photoLogs] = await Promise.all([
+      storeGet(LOG_KEYS.login),
+      storeGet(LOG_KEYS.edit),
+      storeGet(LOG_KEYS.photo),
+    ]);
+    loginLogs = loginLogs || [];
+    editLogs  = editLogs  || [];
+    photoLogs = photoLogs || [];
+  }
 
   function logItem(l, type) {
     const color = memberColor(l.name);
@@ -945,6 +1023,12 @@ async function renderLogs() {
   if (lc) lc.textContent = `共 ${loginLogs.length} 筆`;
   if (ec) ec.textContent = `共 ${editLogs.length} 筆`;
   if (pc) pc.textContent = `共 ${photoLogs.length} 筆`;
+  const hint = document.getElementById('log-sync-hint');
+  if (hint) {
+    hint.textContent = gh?.data
+      ? `☁️ 已從 GitHub 同步（${new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})}）`
+      : '📱 本機資料（啟用雲端後可跨裝置同步）';
+  }
 }
 
 // ── INIT ──

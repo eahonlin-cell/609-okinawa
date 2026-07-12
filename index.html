@@ -59,17 +59,17 @@
     text-shadow: 0 1px 6px rgba(0,0,0,0.2);
     white-space: nowrap;
   }
-  /* 手機：隱藏頂部 nav 文字按鈕，改用底部 tab bar */
+  /* 手機響應式 */
   @media (max-width: 640px) {
-    nav { display: none !important; }
+    #top-nav { display: none !important; }
     #bottom-tab { display: flex !important; }
-    section { min-height: calc(100vh - 64px); padding-bottom: 64px; }
-    #pwa-install-bar { top: 0; position: sticky; z-index: 99; }
+    body { padding-bottom: 64px; }
     .hero { padding: 2rem 1rem 1.5rem; }
     .hero h1 { font-size: 2rem; }
     .cd-num { font-size: 2.2rem; }
     .cd-box { min-width: 70px; padding: 0.9rem 0.75rem; }
     .countdown-wrap { gap: 0.75rem; }
+    .page-inner { padding: 1.25rem 1rem; }
   }
   nav button {
     background: none; border: none; color: rgba(255,255,255,0.75);
@@ -110,7 +110,7 @@
     text-shadow: 0 2px 20px rgba(0,0,0,0.25);
   }
   .hero .sub { font-size: 1rem; opacity: 0.88; margin-bottom: 2.5rem; font-weight: 600; }
-  .countdown-wrap { display: flex; justify-content: center; gap: 1.25rem; flex-wrap: wrap; }
+  .countdown-wrap { display: flex; justify-content: center; gap: 0.75rem; flex-wrap: nowrap; }
   @media (max-width: 400px) {
     .countdown-wrap { gap: 0.6rem; }
     .cd-box { min-width: 64px; padding: 0.75rem 0.6rem; border-radius: 12px; }
@@ -120,7 +120,7 @@
   .cd-box {
     background: rgba(255,255,255,0.18);
     border: 1.5px solid rgba(255,255,255,0.4); border-radius: 16px;
-    padding: 1.25rem 1.5rem; min-width: 92px; text-align: center;
+    padding: 1rem 0.75rem; min-width: 70px; flex: 1; max-width: 100px; text-align: center;
     box-shadow: 0 4px 24px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.3);
   }
   .cd-num {
@@ -522,7 +522,7 @@
 <body>
 
 <!-- ── NAV ── -->
-<nav>
+<nav id="top-nav">
   <div class="nav-logo">🏝 609 沖繩 2刷</div>
   <button onclick="showSection('home')" class="active" data-nav="home">首頁</button>
   <button onclick="showSection('itinerary')" data-nav="itinerary">行程</button>
@@ -1375,6 +1375,19 @@ async function deletePhoto(id, year, event) {
 }
 
 async function init() {
+  // 手機版：顯示底部 tab bar
+  function checkMobile() {
+    const isMobile = window.innerWidth <= 640;
+    const bottomTab = document.getElementById('bottom-tab');
+    const topNav = document.getElementById('top-nav');
+    if (bottomTab) bottomTab.style.display = isMobile ? 'flex' : 'none';
+    if (topNav) topNav.style.display = isMobile ? 'none' : 'flex';
+    if (isMobile) document.body.style.paddingBottom = '64px';
+    else document.body.style.paddingBottom = '';
+  }
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+
   // 顯示 PWA 安裝提示
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;

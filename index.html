@@ -1219,6 +1219,13 @@ async function deletePhoto(id, year, event) {
 }
 
 async function init() {
+  // 自動恢復登入狀態
+  const savedUser = sessionStorage.getItem('current_user');
+  if (savedUser && MEMBERS[savedUser]) {
+    currentUser = savedUser;
+    updateAuthUI();
+  }
+
   startCountdown();
   loadWeather();
   renderMembers();
@@ -1498,6 +1505,7 @@ function doLogin() {
   const p = document.getElementById('auth-pass').value;
   if (MEMBERS[u] && MEMBERS[u].pass === p) {
     currentUser = u;
+    sessionStorage.setItem('current_user', u);
     closeAuth();
     updateAuthUI();
     renderChecklist();
@@ -1516,6 +1524,7 @@ function doLogout() {
   currentUser = null;
   GITHUB.token = null;
   sessionStorage.removeItem('gh_tok');
+  sessionStorage.removeItem('current_user');
   const cnw = document.getElementById('cloud-nav-wrap');
   if (cnw) cnw.style.display = 'none';
   updateAuthUI();

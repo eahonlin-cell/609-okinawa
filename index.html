@@ -1250,6 +1250,7 @@ const CHECKLIST = [
 
 const CL_KEY = 'checklist_609';
 const CL_GH_PATH = 'data/checklist.json';
+let _clSha = null;  // 緩存 SHA，避免每次 save 都重新 fetch
 
 async function clGhLoad() {
   if (!getToken()) return null;
@@ -1260,20 +1261,22 @@ async function clGhLoad() {
     );
     if (!res.ok) return null;
     const d = await res.json();
-    return { data: JSON.parse(base64ToUtf8(d.content)), sha: d.sha };
+    _clSha = d.sha;
+    const raw = base64ToUtf8(d.content).trim();
+    return { data: raw ? JSON.parse(raw) : {}, sha: d.sha };
   } catch { return null; }
 }
 
-async function clGhSave(data, sha) {
+async function clGhSave(data) {
   if (!getToken()) return;
   const content = utf8ToBase64(JSON.stringify(data));
   const body = JSON.stringify({
-    message:'✅ 更新行前 Checklist',
+    message: '✅ 更新行前 Checklist',
     content, branch: GITHUB.branch,
-    ...(sha ? { sha } : {})
+    ...(_clSha ? { sha: _clSha } : {})
   });
   try {
-    await fetch(
+    const res = await fetch(
       `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${CL_GH_PATH}`,
       { method:'PUT', headers:{
           'Authorization':`token ${getToken()}`,
@@ -1281,26 +1284,41 @@ async function clGhSave(data, sha) {
           'Accept':'application/vnd.github.v3+json',
         }, body }
     );
+    if (res.ok) {
+      const d = await res.json();
+      _clSha = d.content?.sha || _clSha;  // 更新緩存 SHA
+    } else {
+      // SHA 衝突時重新抓
+      const gh = await clGhLoad();
+      if (gh) await clGhSave(data);
+    }
   } catch(e) { console.warn('CL sync fail:', e); }
 }
 
 async function clLoad() {
-  if (getToken()) {
-    const gh = await clGhLoad();
-    if (gh?.data) {
-      await storeSet(CL_KEY, gh.data);
-      return gh.data;
-    }
+  // 本機優先讀取（快）
+  const local = (await storeGet(CL_KEY)) || {};
+  if (!getToken()) return local;
+
+  // 有 token 時從 GitHub 讀，取兩者合併（GitHub 為主，保留本機多出的）
+  const gh = await clGhLoad();
+  if (!gh) return local;
+
+  // 合併：以 GitHub 資料為主
+  const merged = { ...local, ...gh.data };
+  // 每個 item 也做 key 合併
+  for (const id of Object.keys(gh.data)) {
+    merged[id] = { ...(local[id]||{}), ...(gh.data[id]||{}) };
   }
-  return (await storeGet(CL_KEY)) || {};
+  await storeSet(CL_KEY, merged);
+  return merged;
 }
 
 async function clSave(data) {
+  // 1. 存本機（即時）
   await storeSet(CL_KEY, data);
-  if (getToken()) {
-    const gh = await clGhLoad();
-    await clGhSave(data, gh?.sha || null);
-  }
+  // 2. 有 token 才推 GitHub（背景執行，不阻塞 UI）
+  if (getToken()) clGhSave(data);
 }
 
 async function clToggle(itemId, memberName) {

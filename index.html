@@ -791,14 +791,9 @@ async function activateCloud() {
   // 更新 nav 按鈕
   const nb = document.getElementById('cloud-nav-btn');
   if (nb) { nb.textContent = '☁️ 已啟用'; nb.disabled = true; nb.style.background = 'var(--teal)'; }
-  showToast('雲端啟用中，載入照片...');
-  // 重新從 GitHub 載入並 render 相簿（這次 canDelete = true）
-  const [p25, p27] = await Promise.all([githubLoadPhotos('2025'), githubLoadPhotos('2027')]);
-  photos['2025'] = p25;
-  photos['2027'] = p27;
-  renderAlbum('2025');
-  renderAlbum('2027');
-  showToast('雲端相簿已啟用！滑鼠移到照片可刪除 ☁️');
+  await _loadAlbumFromGitHub();
+  renderChecklist();
+  showToast('雲端已啟用！照片已載入 ☁️');
 }
 
 async function githubUploadPhoto(filename, base64data, year) {
@@ -1231,10 +1226,31 @@ async function init() {
   renderMap();
   wishes = (await storeGet('wishes_609')) || [];
   renderWishes();
-  renderAlbum('2025');
-  renderAlbum('2027');
   renderLogs();
   renderChecklist();
+
+  // 若 session 已有 token（上次已啟用），自動恢復並載相簿
+  const savedTok = sessionStorage.getItem('gh_tok');
+  if (savedTok) {
+    GITHUB.token = savedTok;
+    await _loadAlbumFromGitHub();
+  } else {
+    // 無 token，只顯示空相簿佔位
+    renderAlbum('2025');
+    renderAlbum('2027');
+  }
+}
+
+async function _loadAlbumFromGitHub() {
+  showToast('載入雲端相簿... ☁️');
+  const [p25, p27] = await Promise.all([
+    githubLoadPhotos('2025'),
+    githubLoadPhotos('2027')
+  ]);
+  photos['2025'] = p25;
+  photos['2027'] = p27;
+  renderAlbum('2025');
+  renderAlbum('2027');
 }
 
 // ── CHECKLIST ──
@@ -1484,9 +1500,9 @@ function doLogin() {
     currentUser = u;
     closeAuth();
     updateAuthUI();
+    renderChecklist();
     renderAlbum('2025');
     renderAlbum('2027');
-    renderChecklist();
     appendLog('login', { name: MEMBERS[u].name, action: 'login' });
     const hasToken = GITHUB.token;
     showToast(`歡迎回來，${MEMBERS[u].name} ${MEMBERS[u].emoji}${hasToken?' ☁️ 雲端相簿已啟用':''}`);

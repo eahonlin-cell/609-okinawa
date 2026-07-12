@@ -2,8 +2,15 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>609 沖繩 2刷 2027</title>
+<meta name="description" content="609 班級沖繩二刷 2027 行程規劃網站">
+<meta name="theme-color" content="#0096C7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="609 沖繩">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
   :root {
@@ -33,6 +40,11 @@
   }
 
   /* ── NAV ── */
+  :root {
+    --sat: env(safe-area-inset-top, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+  }
+  body { padding-top: var(--sat); padding-bottom: var(--sab); }
   nav {
     position: sticky; top: 0; z-index: 100;
     background: linear-gradient(90deg, #00547A 0%, #0096C7 60%, #00BCD4 100%);
@@ -491,6 +503,13 @@
     <button onclick="openAuth()" style="color:rgba(255,255,255,0.6); font-size:0.78rem;">登入</button>
   </div>
 </nav>
+<!-- PWA Install Bar -->
+<div id="pwa-install-bar" style="display:none;background:linear-gradient(90deg,#005F8A,#0096C7);color:#fff;padding:0.6rem 1rem;font-size:0.8rem;font-weight:700;text-align:center;align-items:center;justify-content:center;gap:0.75rem">
+  <span>📱 加入主畫面，像 App 一樣使用！</span>
+  <button onclick="installPWA()" style="background:#FF6B35;color:#fff;border:none;border-radius:6px;padding:0.3rem 0.8rem;font-size:0.78rem;font-weight:700;cursor:pointer">安裝</button>
+  <button onclick="document.getElementById('pwa-install-bar').style.display='none'" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:0.3rem 0.6rem;font-size:0.75rem;cursor:pointer">✕</button>
+</div>
+<div id="pwa-install-btn" style="display:none"></div>
 
 <!-- ══════════════ LOGS ══════════════ -->
 <section id="logs">
@@ -1284,6 +1303,20 @@ async function deletePhoto(id, year, event) {
 }
 
 async function init() {
+  // 顯示 PWA 安裝提示
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  if (isIOS && !isStandalone) {
+    const bar = document.getElementById('pwa-install-bar');
+    if (bar) {
+      bar.style.display = 'flex';
+      bar.querySelector('button:first-of-type').textContent = '教我';
+      bar.querySelector('button:first-of-type').onclick = () => {
+        showToast('Safari → 下方 □↑ 分享 → 「加入主畫面」');
+        bar.style.display = 'none';
+      };
+    }
+  }
   // 自動恢復登入狀態
   const savedUser = sessionStorage.getItem('current_user');
   if (savedUser && MEMBERS[savedUser]) {
@@ -2126,5 +2159,35 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeAuth(
 init();
 </script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(r => console.log('SW registered'))
+      .catch(e => console.log('SW error', e));
+  });
+}
+// PWA install prompt
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.style.display = 'flex';
+});
+window.addEventListener('appinstalled', () => {
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.style.display = 'none';
+  showToast('已加入主畫面！🏝');
+});
+function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(r => {
+      deferredPrompt = null;
+    });
+  }
+}
+</script>
 </body>
 </html>

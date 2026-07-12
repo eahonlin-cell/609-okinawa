@@ -643,10 +643,16 @@
 <section id="tripmap">
   <div class="page-inner">
     <div class="section-title">🗺 行程路線地圖</div>
-    <p class="text-muted" style="margin-bottom:1rem">各天行程以不同顏色標示，點擊景點圖示可查看詳情</p>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem">
+      <p class="text-muted" style="margin:0">各天行程以不同顏色標示，點擊景點圖示可查看詳情</p>
+      <button class="btn btn-sm" onclick="locateMe()"
+        style="background:var(--teal);color:#fff;font-weight:700;flex-shrink:0">
+        📍 顯示我的位置
+      </button>
+    </div>
 
     <!-- 天數切換 -->
-    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem" id="tripmap-day-btns">
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center" id="tripmap-day-btns">
       <button class="btn btn-sm tripmap-day-btn active" data-day="0" onclick="filterTripMap(0)"
         style="background:#444;color:#fff">🗺 全覽</button>
       <button class="btn btn-sm tripmap-day-btn" data-day="1" onclick="filterTripMap(1)"
@@ -970,25 +976,25 @@ const ITINERARY = [
 ];
 
 const SPOTS = [
-  { emoji:'⛩', name:'波上宮', area:'那霸市', note:'沖繩最古老神社 / 免費 / 旁有波上海灘', maps:'https://maps.google.com/?q=波上宮,那覇', day:1, lat:26.2207, lng:127.6711, mapcode:'33 185 022*00' },
-  { emoji:'🌿', name:'福州園', area:'那霸市久米', note:'NT$85 / ⚠ 週三公休 / 中式庭園', maps:'https://maps.google.com/?q=福州園,那覇', day:1, lat:26.218, lng:127.6757, mapcode:'33 156 403*74' },
-  { emoji:'🏛', name:'孔子廟（至聖廟）', area:'那霸市久米', note:'免費 / 步行2分鐘 / 琉球華人史蹟', maps:'https://maps.google.com/?q=久米至聖廟,那覇', day:1, lat:26.2184, lng:127.675, mapcode:'33 156 374*52' },
-  { emoji:'🐟', name:'牧港漁港 海鮮食堂太陽', area:'浦添市', note:'⚠ 週一公休 / 11:00–15:30 / 僅收現金', maps:'https://maps.google.com/?q=海鮮食堂太陽,浦添', day:1, lat:26.2709, lng:127.7237, mapcode:'33 216 085*14' },
-  { emoji:'🌿', name:'識名園', area:'那霸市', note:'NT$85 / ⚠ 週三公休 / 世界遺產', maps:'https://maps.google.com/?q=識名園,那覇', day:3, lat:26.2048, lng:127.7149, mapcode:'33 131 090*26' },
-  { emoji:'🏯', name:'首里城', area:'那霸市首里', note:'世界遺產 / ⚠ 修復中 / 外圍免費', maps:'https://maps.google.com/?q=首里城,那覇', day:3, lat:26.2177, lng:127.7193, mapcode:'33 161 526*71' },
-  { emoji:'🏮', name:'西來院（達磨寺）', area:'那霸市首里', note:'免費 / 達磨娃娃 / 可收御朱印', maps:'https://maps.google.com/?q=西来院,那覇首里', day:3, lat:26.2177, lng:127.7226, mapcode:'33 161 390*60' },
-  { emoji:'🦑', name:'奥武島天婦羅', area:'南城市', note:'もずく天・魚天必點 / 大城店週一公休', maps:'https://maps.google.com/?q=奥武島,沖縄', day:3, lat:26.1315, lng:127.7721, mapcode:'232 467 296*06' },
-  { emoji:'⛩', name:'普天滿宮', area:'宜野灣市', note:'免費 / 地下鐘乳石洞 / 洞內禁拍', maps:'https://maps.google.com/?q=普天満宮,宜野湾', day:3, lat:26.2929, lng:127.7772, mapcode:'33 437 010*85' },
-  { emoji:'⚔', name:'舊海軍司令部壕', area:'豐見城市', note:'NT$180 / 二戰地下隧道', maps:'https://maps.google.com/?q=旧海軍司令部壕,豊見城', day:3, lat:26.1862, lng:127.6765, mapcode:'33 036 664*25' },
-  { emoji:'🌅', name:'瀨長島 Umikaji Terrace', area:'豐見城市', note:'免費入島 / 黃昏最美 / 緊鄰機場跑道', maps:'https://maps.google.com/?q=瀬長島,豊見城', day:3, lat:26.1749, lng:127.6422, mapcode:'33 002 602*06' },
-  { emoji:'☕', name:'道の駅 許田', area:'名護市', note:'全年無休 / 8:30開 / 折扣票土產', maps:'https://maps.google.com/?q=道の駅許田,名護', day:2, lat:26.5923, lng:127.9804, mapcode:'206 354 888*28' },
-  { emoji:'🍺', name:'Orion ハッピーパーク', area:'名護市', note:'1,000日圓 / ⚠ 需預約 / 週一週日公休', maps:'https://maps.google.com/?q=オリオンハッピーパーク,名護', day:2, lat:26.5863, lng:127.9892, mapcode:'206 385 179*77' },
-  { emoji:'🏔', name:'嵐山展望台', area:'名護市', note:'免費 / 24hr / 俯瞰羽地內海', maps:'https://maps.google.com/?q=嵐山展望台,名護', day:2, lat:26.633, lng:127.984, mapcode:'206 476 362*36' },
-  { emoji:'🐠', name:'海中展望塔', area:'名護市本部', note:'NT$200 / 水中觀景台 / 沖繩唯一', maps:'https://maps.google.com/?q=海中展望塔,本部', day:2, lat:26.5292, lng:127.9573, mapcode:'206 442 461*52' },
-  { emoji:'🌊', name:'古宇利海洋塔', area:'今歸仁村', note:'NT$270 / 360度海景', maps:'https://maps.google.com/?q=古宇利海洋タワー,今帰仁', day:2, lat:26.6964, lng:128.0315, mapcode:'485 692 330*47' },
-  { emoji:'🏖', name:'古宇利海灘', area:'今歸仁村', note:'免費 / 透明碧藍海水', maps:'https://maps.google.com/?q=古宇利島,今帰仁', day:2, lat:26.7002, lng:128.0298, mapcode:'485 692 151*77' },
-  { emoji:'🐋', name:'DMM かりゆし水族館', area:'那霸小祿', note:'NT$700 / 那霸市內 / 週日室內好選擇', maps:'https://maps.google.com/?q=DMMかりゆし水族館,那覇', day:4, lat:26.1748, lng:127.665, mapcode:'232 543 400*25' },
-  { emoji:'🏖', name:'美國村（北谷）', area:'北谷町', note:'免費逛 / 美式風情 / 夕陽絕景', maps:'https://maps.google.com/?q=美浜アメリカンビレッジ,北谷', day:4, lat:26.3064, lng:127.7546, mapcode:'33 525 449*16' },
+  { emoji:'⛩', name:'波上宮', area:'那霸市', note:'沖繩最古老神社 / 免費 / 旁有波上海灘', maps:'https://maps.google.com/?q=波上宮,那覇', day:1, lat:26.220737, lng:127.671101, mapcode:'33 185 022*00' },
+  { emoji:'🌿', name:'福州園', area:'那霸市久米', note:'NT$85 / ⚠ 週三公休 / 中式庭園', maps:'https://maps.google.com/?q=福州園,那覇', day:1, lat:26.217926, lng:127.675619, mapcode:'33 156 403*74' },
+  { emoji:'🏛', name:'孔子廟（至聖廟）', area:'那霸市久米', note:'免費 / 步行2分鐘 / 琉球華人史蹟', maps:'https://maps.google.com/?q=久米至聖廟,那覇', day:1, lat:26.218010, lng:127.675200, mapcode:'33 156 374*52' },
+  { emoji:'🐟', name:'牧港漁港 海鮮食堂太陽', area:'浦添市', note:'⚠ 週一公休 / 11:00–15:30 / 僅收現金', maps:'https://maps.google.com/?q=海鮮食堂太陽,浦添', day:1, lat:26.270464, lng:127.723854, mapcode:'33 216 085*14' },
+  { emoji:'🌿', name:'識名園', area:'那霸市', note:'NT$85 / ⚠ 週三公休 / 世界遺產', maps:'https://maps.google.com/?q=識名園,那覇', day:3, lat:26.204837, lng:127.714884, mapcode:'33 131 090*26' },
+  { emoji:'🏯', name:'首里城', area:'那霸市首里', note:'世界遺產 / ⚠ 修復中 / 外圍免費', maps:'https://maps.google.com/?q=首里城,那覇', day:3, lat:26.216857, lng:127.719259, mapcode:'33 161 526*71' },
+  { emoji:'🏮', name:'西來院（達磨寺）', area:'那霸市首里', note:'免費 / 達磨娃娃 / 可收御朱印', maps:'https://maps.google.com/?q=西来院,那覇首里', day:3, lat:26.217230, lng:127.722060, mapcode:'33 161 390*60' },
+  { emoji:'🦑', name:'奥武島天婦羅', area:'南城市', note:'もずく天・魚天必點 / 大城店週一公休', maps:'https://maps.google.com/?q=奥武島,沖縄', day:3, lat:26.131466, lng:127.772097, mapcode:'232 467 296*06' },
+  { emoji:'⛩', name:'普天滿宮', area:'宜野灣市', note:'免費 / 地下鐘乳石洞 / 洞內禁拍', maps:'https://maps.google.com/?q=普天満宮,宜野湾', day:3, lat:26.290064, lng:127.776832, mapcode:'33 437 010*85' },
+  { emoji:'⚔', name:'舊海軍司令部壕', area:'豐見城市', note:'NT$180 / 二戰地下隧道', maps:'https://maps.google.com/?q=旧海軍司令部壕,豊見城', day:3, lat:26.186196, lng:127.676471, mapcode:'33 036 664*25' },
+  { emoji:'🌅', name:'瀨長島 Umikaji Terrace', area:'豐見城市', note:'免費入島 / 黃昏最美 / 緊鄰機場跑道', maps:'https://maps.google.com/?q=瀬長島,豊見城', day:3, lat:26.174898, lng:127.642237, mapcode:'33 002 602*06' },
+  { emoji:'☕', name:'道の駅 許田', area:'名護市', note:'全年無休 / 8:30開 / 折扣票土產', maps:'https://maps.google.com/?q=道の駅許田,名護', day:2, lat:26.592300, lng:127.980400, mapcode:'206 354 888*28' },
+  { emoji:'🍺', name:'Orion ハッピーパーク', area:'名護市', note:'1,000日圓 / ⚠ 需預約 / 週一週日公休', maps:'https://maps.google.com/?q=オリオンハッピーパーク,名護', day:2, lat:26.586346, lng:127.989156, mapcode:'206 385 179*77' },
+  { emoji:'🏔', name:'嵐山展望台', area:'名護市', note:'免費 / 24hr / 俯瞰羽地內海', maps:'https://maps.google.com/?q=嵐山展望台,名護', day:2, lat:26.616062, lng:127.988073, mapcode:'206 476 362*36' },
+  { emoji:'🐠', name:'海中展望塔', area:'名護市本部', note:'NT$200 / 水中觀景台 / 沖繩唯一', maps:'https://maps.google.com/?q=海中展望塔,本部', day:2, lat:26.529160, lng:127.957300, mapcode:'206 442 461*52' },
+  { emoji:'🌊', name:'古宇利海洋塔', area:'今歸仁村', note:'NT$270 / 360度海景', maps:'https://maps.google.com/?q=古宇利海洋タワー,今帰仁', day:2, lat:26.690864, lng:128.031532, mapcode:'485 692 330*47' },
+  { emoji:'🏖', name:'古宇利海灘', area:'今歸仁村', note:'免費 / 透明碧藍海水', maps:'https://maps.google.com/?q=古宇利島,今帰仁', day:2, lat:26.700200, lng:128.030000, mapcode:'485 692 151*77' },
+  { emoji:'🐋', name:'DMM かりゆし水族館', area:'那霸小祿', note:'NT$700 / 那霸市內 / 週日室內好選擇', maps:'https://maps.google.com/?q=DMMかりゆし水族館,那覇', day:4, lat:26.174800, lng:127.665000, mapcode:'232 543 400*25' },
+  { emoji:'🏖', name:'美國村（北谷）', area:'北谷町', note:'免費逛 / 美式風情 / 夕陽絕景', maps:'https://maps.google.com/?q=美浜アメリカンビレッジ,北谷', day:4, lat:26.306443, lng:127.754590, mapcode:'33 525 449*16' },
 ];
 
 const DAY_BADGE = ['', 'badge-ocean','badge-ocean','badge-teal','badge-gold','badge-coral'];
@@ -1602,6 +1608,26 @@ function renderRouteInfo(dayFilter) {
       <div class="route-stops">${chips}</div>
     </div>`;
   }).join('');
+}
+
+function locateMe() {
+  if (!tripmapObj) { showSection('tripmap'); setTimeout(locateMe, 500); return; }
+  if (!navigator.geolocation) { showToast('此裝置不支援 GPS 定位'); return; }
+  showToast('定位中... 📍');
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const { latitude: lat, longitude: lng } = pos.coords;
+      if (window._locateMarker) window._locateMarker.remove();
+      window._locateMarker = L.circleMarker([lat, lng], {
+        radius: 10, fillColor: '#E8603A', color: '#fff',
+        weight: 3, opacity: 1, fillOpacity: 0.9
+      }).addTo(tripmapObj).bindPopup('📍 你在這裡').openPopup();
+      tripmapObj.setView([lat, lng], 14);
+      showToast('定位成功！');
+    },
+    err => { showToast('定位失敗：' + err.message); },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
 }
 
 function filterTripMap(day) {

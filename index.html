@@ -2271,12 +2271,14 @@ init();
 </script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+// 清除所有舊的 Service Worker 和快取
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js')
-      .then(r => console.log('SW registered'))
-      .catch(e => console.log('SW error', e));
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(r => r.unregister());
   });
+}
+if ('caches' in window) {
+  caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
 }
 // PWA install prompt
 let deferredPrompt;

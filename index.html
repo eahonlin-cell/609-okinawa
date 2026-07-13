@@ -27,6 +27,7 @@
     --border: #E2D9CF;
     --radius: 14px;
     --nav-h: 58px;
+    --nav-h-mobile: 58px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -1376,9 +1377,12 @@ async function init() {
     const bottomTab = document.getElementById('bottom-tab');
     const topNav = document.getElementById('top-nav');
     if (bottomTab) bottomTab.style.display = isMobile ? 'flex' : 'none';
-    if (topNav) topNav.style.display = isMobile ? 'none' : 'flex';
-    if (isMobile) document.body.style.paddingBottom = '64px';
-    else document.body.style.paddingBottom = '';
+    if (topNav) {
+      topNav.style.display = isMobile ? 'none' : 'flex';
+      topNav.style.position = isMobile ? 'static' : 'sticky';
+    }
+    document.body.style.paddingBottom = isMobile ? '64px' : '';
+    document.body.style.paddingTop = '0';
   }
   checkMobile();
   window.addEventListener('resize', checkMobile);

@@ -284,6 +284,18 @@
     box-shadow: 0 2px 10px rgba(0,100,160,0.07);
   }
   .wish-bubble:hover { transform: translateY(-3px) rotate(-0.5deg); box-shadow: 0 8px 24px rgba(0,100,160,0.15); }
+  .wish-img { width:100%; border-radius:10px; margin-bottom:0.5rem; max-height:200px; object-fit:cover; cursor:pointer; }
+  .wish-link-card {
+    display:flex; gap:0.6rem; align-items:center;
+    background:var(--sand); border:1px solid var(--border); border-radius:8px;
+    padding:0.5rem; margin-bottom:0.4rem; text-decoration:none; color:inherit;
+    transition:background 0.15s;
+  }
+  .wish-link-card:hover { background:var(--ocean-light); }
+  .wish-link-thumb { width:52px; height:52px; object-fit:cover; border-radius:6px; flex-shrink:0; background:var(--border); }
+  .wish-link-info { flex:1; min-width:0; }
+  .wish-link-title { font-size:0.78rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .wish-link-url { font-size:0.68rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .wish-bubble:hover { transform: translateY(-2px); }
   .wish-bubble p { font-size: 0.88rem; line-height: 1.5; }
   .wish-meta { margin-top: 0.4rem; display: flex; justify-content: space-between; align-items: center; }
@@ -859,9 +871,33 @@
   <div class="page-inner">
     <div class="section-title">🪙 許願池</div>
     <p class="text-muted" style="margin-bottom:1.25rem;">把這趟旅行想做的事、想吃的食物、想拍的照片⋯⋯全丟進來！</p>
-    <div class="wish-input-row" id="wish-input-row" style="display:none">
-      <input type="text" id="wish-text" placeholder="輸入你的願望..." maxlength="60" />
-      <button class="btn btn-coral" onclick="addWish()">丟入 🪙</button>
+    <div id="wish-input-row" style="display:none;margin-bottom:1.25rem">
+      <!-- 文字 + 連結輸入 -->
+      <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem">
+        <input type="text" id="wish-text" placeholder="輸入願望、或貼上連結 (http...)" style="flex:1" />
+        <button class="btn btn-coral" onclick="addWish()">丟入 🪙</button>
+      </div>
+      <!-- 連結預覽區 -->
+      <div id="wish-link-preview" style="display:none;background:var(--sand);border:1px solid var(--border);border-radius:10px;padding:0.6rem;margin-bottom:0.5rem;display:flex;gap:0.75rem;align-items:center">
+        <img id="wish-preview-img" src="" style="width:64px;height:64px;object-fit:cover;border-radius:6px;flex-shrink:0" />
+        <div style="flex:1;min-width:0">
+          <div id="wish-preview-title" style="font-size:0.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+          <div id="wish-preview-url" style="font-size:0.72rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+        </div>
+      </div>
+      <!-- 圖片上傳 -->
+      <div style="display:flex;align-items:center;gap:0.5rem">
+        <label style="cursor:pointer;color:var(--ocean);font-size:0.8rem;font-weight:700;display:flex;align-items:center;gap:0.25rem;margin:0">
+          <input type="file" id="wish-img-input" accept="image/*" style="display:none" onchange="handleWishImage(event)" />
+          📷 附上圖片
+        </label>
+        <span id="wish-img-name" style="font-size:0.75rem;color:var(--text-muted)"></span>
+        <button id="wish-img-clear" onclick="clearWishImage()" style="display:none;background:none;border:none;color:var(--coral);font-size:0.75rem;cursor:pointer">✕ 移除</button>
+      </div>
+      <!-- 圖片預覽 -->
+      <div id="wish-img-preview-wrap" style="display:none;margin-top:0.5rem">
+        <img id="wish-img-preview" src="" style="max-height:120px;border-radius:8px;border:1px solid var(--border)" />
+      </div>
     </div>
     <p id="wish-login-hint" class="text-muted text-sm" style="margin-bottom:1.25rem;">登入後可以投入願望</p>
     <div class="wish-pool" id="wish-pool"></div>
@@ -2023,21 +2059,122 @@ function renderMap() {
 
 // ── WISHES ──
 const COINS = ['🪙','💫','🌊','🌸','🍺','🦑','🥩','🎸','📷','✨'];
+// 許願池圖片暫存
+let wishImgData = null;
+let wishLinkData = null;
+
+function isURL(str) {
+  return /^https?:\/\//i.test(str.trim());
+}
+
+async function fetchLinkPreview(url) {
+  try {
+    // 用 allorigins proxy 繞過 CORS
+    const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    const res = await fetch(proxy, { signal: AbortSignal.timeout(5000) });
+    const data = await res.json();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(data.contents, 'text/html');
+    const title = doc.querySelector('meta[property="og:title"]')?.content
+      || doc.querySelector('title')?.textContent || url;
+    const img = doc.querySelector('meta[property="og:image"]')?.content || '';
+    return { title: title.trim().substring(0, 80), img, url };
+  } catch { return { title: url, img: '', url }; }
+}
+
+async function onWishTextInput() {
+  const txt = document.getElementById('wish-text').value.trim();
+  const previewBox = document.getElementById('wish-link-preview');
+  if (isURL(txt)) {
+    previewBox.style.display = 'flex';
+    document.getElementById('wish-preview-title').textContent = '載入預覽中...';
+    document.getElementById('wish-preview-url').textContent = txt;
+    document.getElementById('wish-preview-img').src = '';
+    const data = await fetchLinkPreview(txt);
+    wishLinkData = data;
+    document.getElementById('wish-preview-title').textContent = data.title;
+    document.getElementById('wish-preview-url').textContent = data.url;
+    if (data.img) document.getElementById('wish-preview-img').src = data.img;
+  } else {
+    previewBox.style.display = 'none';
+    wishLinkData = null;
+  }
+}
+
+function handleWishImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    wishImgData = ev.target.result;
+    document.getElementById('wish-img-preview').src = wishImgData;
+    document.getElementById('wish-img-preview-wrap').style.display = 'block';
+    document.getElementById('wish-img-name').textContent = file.name;
+    document.getElementById('wish-img-clear').style.display = 'inline';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearWishImage() {
+  wishImgData = null;
+  document.getElementById('wish-img-input').value = '';
+  document.getElementById('wish-img-preview-wrap').style.display = 'none';
+  document.getElementById('wish-img-name').textContent = '';
+  document.getElementById('wish-img-clear').style.display = 'none';
+}
+
+async function uploadWishImage(dataUrl) {
+  if (!getToken()) return dataUrl; // fallback: 存 base64（本機）
+  try {
+    const base64 = dataUrl.split(',')[1];
+    const filename = `wish_${Date.now()}.jpg`;
+    const path = `wishes/${filename}`;
+    const body = JSON.stringify({
+      message: '🪙 許願池圖片',
+      content: base64,
+      branch: GITHUB.branch,
+    });
+    const res = await fetch(
+      `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${path}`,
+      { method: 'PUT', headers: {
+          'Authorization': `token ${getToken()}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/vnd.github.v3+json',
+        }, body }
+    );
+    const d = await res.json();
+    if (res.ok) return d.content.download_url;
+  } catch {}
+  return dataUrl;
+}
+
 async function addWish() {
   if (!currentUser) { openAuth(); return; }
   const txt = document.getElementById('wish-text').value.trim();
-  if (!txt) return;
+  if (!txt && !wishImgData) { showToast('請輸入願望或上傳圖片'); return; }
+
+  let imgUrl = null;
+  if (wishImgData) {
+    showToast('上傳圖片中...');
+    imgUrl = await uploadWishImage(wishImgData);
+  }
+
   const wish = {
     id: Date.now(),
     text: txt,
     author: MEMBERS[currentUser].name,
     color: MEMBERS[currentUser].color,
     coin: COINS[Math.floor(Math.random() * COINS.length)],
-    time: new Date().toLocaleDateString('zh-TW')
+    time: new Date().toLocaleDateString('zh-TW'),
+    img: imgUrl || null,
+    link: (isURL(txt) && wishLinkData) ? wishLinkData : null,
   };
   wishes.unshift(wish);
   await storeSet('wishes_609', wishes);
   document.getElementById('wish-text').value = '';
+  document.getElementById('wish-link-preview').style.display = 'none';
+  clearWishImage();
+  wishLinkData = null;
   renderWishes();
   showToast('願望投入！🪙');
 }
@@ -2053,17 +2190,46 @@ async function deleteWish(id) {
 
 function renderWishes() {
   const pool = document.getElementById('wish-pool');
-  if (!wishes.length) { pool.innerHTML = `<p class="text-muted text-sm" style="text-align:center;padding:2rem 0;grid-column:1/-1">許願池空空的，快來投入你的願望！</p>`; return; }
-  pool.innerHTML = wishes.map(w => `
-    <div class="wish-bubble">
+  if (!wishes.length) {
+    pool.innerHTML = `<p class="text-muted text-sm" style="text-align:center;padding:2rem 0;grid-column:1/-1">許願池空空的，快來投入你的願望！</p>`;
+    return;
+  }
+  pool.innerHTML = wishes.map(w => {
+    const canDel = currentUser && w.author === MEMBERS[currentUser]?.name;
+    // 圖片區塊
+    const imgHtml = w.img
+      ? `<img class="wish-img" src="${w.img}" alt="圖片" onclick="openLightboxUrl('${w.img}')" />`
+      : '';
+    // 連結預覽卡片
+    const linkHtml = w.link
+      ? `<a class="wish-link-card" href="${w.link.url}" target="_blank" rel="noopener">
+          ${w.link.img ? `<img class="wish-link-thumb" src="${w.link.img}" alt="" onerror="this.style.display='none'" />` : '<div class="wish-link-thumb" style="background:var(--ocean-light);display:flex;align-items:center;justify-content:center;font-size:1.2rem">🔗</div>'}
+          <div class="wish-link-info">
+            <div class="wish-link-title">${w.link.title}</div>
+            <div class="wish-link-url">${w.link.url}</div>
+          </div>
+        </a>`
+      : '';
+    // 文字（若是純連結且有卡片，不重複顯示連結文字）
+    const textHtml = (w.text && !(w.link && isURL(w.text)))
+      ? `<p style="margin-bottom:0.3rem">${w.text}</p>` : '';
+
+    return `<div class="wish-bubble">
       <span class="wish-coin">${w.coin}</span>
-      <p>${w.text}</p>
+      ${imgHtml}
+      ${linkHtml}
+      ${textHtml}
       <div class="wish-meta">
         <span class="wish-author" style="color:${w.color}">✦ ${w.author} · ${w.time}</span>
-        ${currentUser && w.author === currentUser ? `<button class="wish-del" onclick="deleteWish(${w.id})">✕</button>` : ''}
+        ${canDel ? `<button class="wish-del" onclick="deleteWish(${w.id})">✕</button>` : ''}
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
+}
+
+function openLightboxUrl(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
 }
 
 // ── ALBUM ──
@@ -2259,6 +2425,7 @@ function showToast(msg) {
 
 // ── KEYBOARD ──
 document.getElementById('wish-text').addEventListener('keydown', e => { if (e.key === 'Enter') addWish(); });
+document.getElementById('wish-text').addEventListener('input', () => { onWishTextInput(); });
 document.getElementById('auth-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeAuth(); closeLightbox(); } });
 
